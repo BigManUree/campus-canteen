@@ -1,0 +1,219 @@
+<!--pages/profile/profile.wxml-->
+<view class="page">
+  <view class="profile-hero">
+    <view class="hero-glow hero-glow-left"></view>
+    <view class="hero-glow hero-glow-right"></view>
+
+    <block wx:if="{{isLogin && userInfo}}">
+      <view class="profile-card profile-card-main">
+        <view class="profile-top">
+          <view class="identity-wrap">
+        <image class="avatar" src="{{userInfo.avatar || '/static/default-avatar.png'}}" mode="aspectFill" bindtap="onEditProfile" />
+            <view class="identity-content">
+              <view class="identity-row">
+            <text class="username">{{userInfo.nickname || userInfo.username}}</text>
+                <view class="mini-tag" bindtap="onNotifications">
+                  <text class="mini-tag-text">消息 {{unreadCount > 99 ? '99+' : unreadCount}}</text>
+                </view>
+              </view>
+              <text class="user-phone">{{userInfo.phone || 'ID: ' + userInfo.user_id}}</text>
+              <text class="user-slogan">今天也要按时吃饭，好好生活。</text>
+            </view>
+          </view>
+          <view class="edit-icon" bindtap="onEditProfile">
+            <text>✏️</text>
+          </view>
+        </view>
+
+        <view class="quick-stats">
+          <view class="quick-stat" bindtap="onCoupons">
+            <text class="quick-stat-value">{{stats.coupons}}</text>
+            <text class="quick-stat-label">优惠券</text>
+          </view>
+          <view class="quick-stat-divider"></view>
+          <view class="quick-stat" bindtap="onNotifications">
+            <text class="quick-stat-value">{{unreadCount}}</text>
+            <text class="quick-stat-label">未读消息</text>
+          </view>
+          <view class="quick-stat-divider"></view>
+          <view class="quick-stat" bindtap="onMyOrders">
+            <text class="quick-stat-value">{{orderStats.pending + orderStats.preparing + orderStats.ready + orderStats.delivering + orderStats.refund}}</text>
+            <text class="quick-stat-label">订单提醒</text>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view class="profile-card login-card-new">
+        <view class="login-copy">
+          <text class="login-title">登录后解锁你的校园食堂生活</text>
+          <text class="login-desc">查看订单、领取优惠券、接收通知提醒</text>
+        </view>
+        <view class="login-action" bindtap="onLogin">
+          <text class="login-action-text">立即登录</text>
+        </view>
+      </view>
+    </block>
+            </view>
+
+<admin-alert-overlay
+  show="{{adminAlertOverlay.show}}"
+  alert="{{adminAlertOverlay.alert}}"
+  queueLength="{{adminAlertOverlay.queueLength}}"
+  bind:later="onAdminAlertLater"
+  bind:view="onAdminAlertView"
+/>
+
+  <view class="content-shell">
+    <view class="order-card" wx:if="{{isLogin}}">
+      <view class="card-head">
+        <view>
+          <text class="card-title">订单动态</text>
+          <text class="card-subtitle">按状态快速查看你的订单</text>
+        </view>
+        <view class="card-link" bindtap="onMyOrders">
+          <text class="card-link-text">全部订单</text>
+          <text class="card-link-arrow">›</text>
+      </view>
+    </view>
+
+      <view class="order-grid">
+        <view class="order-tile tile-blue" bindtap="onOrderStatus" data-status="0">
+          <view class="order-badge order-badge-tile" wx:if="{{orderStats.pending > 0}}">{{orderStats.pending > 99 ? '99+' : orderStats.pending}}</view>
+          <view class="order-bubble">
+          <text class="order-icon">💳</text>
+        </view>
+          <text class="order-tile-title">待支付</text>
+          <text class="order-tile-desc">尽快完成付款</text>
+      </view>
+        <view class="order-tile tile-orange" bindtap="onOrderStatus" data-status="1">
+          <view class="order-badge order-badge-tile" wx:if="{{orderStats.preparing > 0}}">{{orderStats.preparing > 99 ? '99+' : orderStats.preparing}}</view>
+          <view class="order-bubble">
+          <text class="order-icon">👨‍🍳</text>
+        </view>
+          <text class="order-tile-title">制作中</text>
+          <text class="order-tile-desc">正在为你准备</text>
+      </view>
+        <view class="order-tile tile-green" bindtap="onOrderStatus" data-status="2">
+          <view class="order-badge order-badge-tile" wx:if="{{orderStats.ready > 0}}">{{orderStats.ready > 99 ? '99+' : orderStats.ready}}</view>
+          <view class="order-bubble">
+          <text class="order-icon">🍱</text>
+        </view>
+          <text class="order-tile-title">待取餐</text>
+          <text class="order-tile-desc">可以去取餐啦</text>
+      </view>
+        <view class="order-tile tile-cyan" bindtap="onOrderStatus" data-status="3">
+          <view class="order-badge order-badge-tile" wx:if="{{orderStats.delivering > 0}}">{{orderStats.delivering > 99 ? '99+' : orderStats.delivering}}</view>
+          <view class="order-bubble">
+          <text class="order-icon">🚚</text>
+        </view>
+          <text class="order-tile-title">配送中</text>
+          <text class="order-tile-desc">正在送达路上</text>
+      </view>
+        <view class="order-tile tile-red" bindtap="onOrderStatus" data-status="refund">
+          <view class="order-badge order-badge-tile" wx:if="{{orderStats.refund > 0}}">{{orderStats.refund > 99 ? '99+' : orderStats.refund}}</view>
+          <view class="order-bubble">
+          <text class="order-icon">💰</text>
+        </view>
+          <text class="order-tile-title">退款</text>
+          <text class="order-tile-desc">退款进度查看</text>
+      </view>
+    </view>
+  </view>
+
+    <view class="feature-panel">
+      <view class="feature-section" wx:if="{{isLogin}}">
+        <view class="section-caption">
+          <text class="section-caption-text">常用工具</text>
+        </view>
+        <view class="feature-list glass-list">
+          <view class="feature-item" bindtap="onFavorites">
+            <view class="feature-left">
+              <view class="feature-icon bg-rose">❤</view>
+              <text class="feature-label">我的收藏</text>
+            </view>
+            <text class="feature-arrow">›</text>
+        </view>
+          <view class="feature-item" bindtap="onHistory">
+            <view class="feature-left">
+              <view class="feature-icon bg-gold">◔</view>
+              <text class="feature-label">浏览历史</text>
+      </view>
+            <text class="feature-arrow">›</text>
+        </view>
+          <view class="feature-item" bindtap="onAddress">
+            <view class="feature-left">
+              <view class="feature-icon bg-purple">⌖</view>
+              <text class="feature-label">地址管理</text>
+      </view>
+            <text class="feature-arrow">›</text>
+        </view>
+      </view>
+    </view>
+
+      <view class="feature-section">
+        <view class="section-caption">
+          <text class="section-caption-text">更多服务</text>
+        </view>
+        <view class="feature-list feature-list-highlight">
+          <view class="feature-item" bindtap="onActivityCenter">
+            <view class="feature-left">
+              <view class="feature-icon bg-pink">✦</view>
+              <text class="feature-label">活动中心</text>
+        </view>
+            <text class="feature-arrow">›</text>
+      </view>
+          <view class="feature-item" bindtap="onFAQ">
+            <view class="feature-left">
+              <view class="feature-icon bg-blue">?</view>
+              <text class="feature-label">常见问题</text>
+        </view>
+            <text class="feature-arrow">›</text>
+      </view>
+          <view class="feature-item" bindtap="onNotifications" wx:if="{{isLogin}}">
+            <view class="feature-left">
+              <view class="feature-icon bg-indigo">✉</view>
+              <text class="feature-label">通知中心</text>
+        </view>
+            <view class="feature-right">
+          <view class="menu-badge" wx:if="{{unreadCount > 0}}">{{unreadCount}}</view>
+              <text class="feature-arrow">›</text>
+        </view>
+      </view>
+          <view class="feature-item" bindtap="onAbout">
+            <view class="feature-left">
+              <view class="feature-icon bg-slate">i</view>
+              <text class="feature-label">关于我们</text>
+            </view>
+            <view class="feature-right">
+              <text class="feature-version">v1.0.0</text>
+              <text class="feature-arrow">›</text>
+        </view>
+        </view>
+      </view>
+    </view>
+
+      <view class="feature-section" wx:if="{{isLogin}}">
+        <view class="section-caption">
+          <text class="section-caption-text">账号与安全</text>
+        </view>
+        <view class="feature-list glass-list">
+          <view class="feature-item" bindtap="onChangePassword">
+            <view class="feature-left">
+              <view class="feature-icon bg-dark">⌘</view>
+              <text class="feature-label">修改密码</text>
+            </view>
+            <text class="feature-arrow">›</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="logout-section" wx:if="{{isLogin}}">
+    <view class="logout-btn" bindtap="onLogout">
+      <text>退出登录</text>
+      </view>
+    </view>
+  </view>
+</view>

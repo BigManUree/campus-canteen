@@ -1,0 +1,200 @@
+<!--pages/index/index.wxml-->
+<view class="page">
+  <view class="aurora aurora-1"></view>
+  <view class="aurora aurora-2"></view>
+
+  <view class="hero-shell">
+    <view class="hero-panel">
+      <view class="topbar">
+        <view class="location-block">
+          <text class="eyebrow">{{currentMealLabel}}</text>
+          <view class="location-row">
+            <text class="location-pin">◉</text>
+      <text class="location-text">{{currentLocation}}</text>
+          </view>
+        </view>
+        <view class="message-chip {{unreadCount > 0 ? 'has-unread' : 'is-empty'}}" bindtap="onNotificationCenterTap">
+          <text class="message-count">{{unreadCount > 99 ? '99+' : unreadCount}}</text>
+          <text class="message-label">{{unreadCount > 0 ? '未读消息' : '消息中心'}}</text>
+    </view>
+  </view>
+
+<admin-alert-overlay
+  show="{{adminAlertOverlay.show}}"
+  alert="{{adminAlertOverlay.alert}}"
+  queueLength="{{adminAlertOverlay.queueLength}}"
+  bind:later="onAdminAlertLater"
+  bind:view="onAdminAlertView"
+/>
+
+      <view class="hero-main">
+        <view class="hero-copy">
+          <text class="hero-title">{{greetingTitle}}</text>
+          <text class="hero-subtitle">{{greetingSubtitle}}</text>
+        </view>
+
+        <view class="hero-stats">
+          <view class="hero-stat-card glass warm">
+            <text class="hero-stat-value">{{canteens.length}}</text>
+            <text class="hero-stat-label">食堂总数</text>
+          </view>
+          <view class="hero-stat-card glass cool">
+            <text class="hero-stat-value">{{hotDishes.length}}</text>
+            <text class="hero-stat-label">热销菜品</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="search-banner" bindtap="onViewAllDishes">
+        <view class="search-banner-icon">⌕</view>
+        <view class="search-banner-copy">
+          <text class="search-banner-title">浏览全部菜品</text>
+          <text class="search-banner-desc">按食堂查看，快速找到想吃的窗口和菜品</text>
+    </view>
+        <text class="search-banner-arrow">→</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="content-wrap">
+    <view class="quick-panel card-surface">
+      <view class="panel-header compact">
+        <view>
+          <text class="panel-title">快捷入口</text>
+          <text class="panel-subtitle">高频功能一键直达</text>
+        </view>
+      </view>
+
+      <view class="quick-grid">
+        <view class="quick-tile quick-amber" bindtap="onActivityTap">
+          <view class="quick-glyph">✦</view>
+          <text class="quick-name">活动中心</text>
+          <text class="quick-desc">看看今天有没有新活动</text>
+    </view>
+        <view class="quick-tile quick-rose" bindtap="onCouponTap">
+          <view class="quick-glyph">券</view>
+          <text class="quick-name">优惠券</text>
+          <text class="quick-desc">{{quickTips.coupon}}</text>
+      </view>
+        <view class="quick-tile quick-cyan" bindtap="onFAQTap">
+          <view class="quick-glyph">?</view>
+          <text class="quick-name">常见问题</text>
+          <text class="quick-desc">支付配送与使用说明</text>
+    </view>
+        <view class="quick-tile quick-green" bindtap="onHistoryTap">
+          <view class="quick-glyph">↺</view>
+          <text class="quick-name">浏览历史</text>
+          <text class="quick-desc">{{quickTips.history}}</text>
+  </view>
+      </view>
+    </view>
+
+    <view class="canteen-panel card-surface">
+      <view class="panel-header">
+        <view>
+          <text class="panel-title">食堂导航</text>
+          <text class="panel-subtitle">选择常去食堂，直接进入分类页</text>
+        </view>
+        <text class="panel-tag">{{canteens.length}} 个食堂</text>
+      </view>
+
+      <view class="canteen-list" wx:if="{{canteens.length > 0}}">
+        <view class="canteen-row {{lastVisitedCanteenId === item.canteen_id ? 'is-last-visited' : ''}}" wx:for="{{canteens}}" wx:key="canteen_id" bindtap="onCanteenQuickNav" data-index="{{index}}">
+          <view class="canteen-rail rail-{{index % 4}}"></view>
+          <view class="canteen-main">
+            <view class="canteen-head">
+              <text class="canteen-name">{{item.canteen_name}}</text>
+              <view class="canteen-status {{item.status === 1 ? 'open' : 'rest'}}">
+                <text class="canteen-status-dot"></text>
+                <text>{{item.status === 1 ? '营业中' : '休息中'}}</text>
+              </view>
+            </view>
+            <view class="canteen-meta-row">
+              <text class="canteen-meta">{{item.window_count ? (item.window_count + '个窗口') : '窗口待完善'}}</text>
+              <text class="canteen-meta">{{lastVisitedCanteenId === item.canteen_id ? '你刚刚看过这里' : '点击进入分类页'}}</text>
+            </view>
+          </view>
+          <text class="canteen-arrow">›</text>
+        </view>
+      </view>
+
+      <view class="empty-lite" wx:else>
+        <text class="empty-lite-text">食堂数据正在准备中</text>
+      </view>
+    </view>
+
+    <view class="featured-panel" wx:if="{{bannerDishes.length > 0}}">
+      <view class="panel-header overlay-header">
+        <view>
+          <text class="panel-title light">今日精选</text>
+          <text class="panel-subtitle light-sub">{{featuredDishName ? ('当前推荐：' + featuredDishName) : '从热销菜品里挑几道值得先看'}}</text>
+  </view>
+        <text class="featured-counter">{{bannerDishes.length > 0 ? (activeBannerIndex + 1) : 0}} / {{bannerDishes.length}}</text>
+      </view>
+
+      <swiper class="featured-swiper" indicator-dots indicator-color="rgba(255,255,255,0.2)" indicator-active-color="#ffe082" autoplay circular interval="4200" current="{{activeBannerIndex}}" bindchange="onFeaturedChange">
+        <swiper-item wx:for="{{bannerDishes}}" wx:key="dish_id">
+          <view class="featured-card" bindtap="onDishTap" data-id="{{item.dish_id}}">
+            <image class="featured-image" src="{{item.cover_url}}" mode="aspectFill" />
+            <view class="featured-mask"></view>
+            <view class="featured-content">
+              <text class="featured-badge">SIGNATURE</text>
+              <text class="featured-name">{{item.name}}</text>
+              <text class="featured-meta">{{featuredDishMeta || ('月售' + (item.sales_count || 0) + ' · 评分 ' + (item.rating || 0))}}</text>
+              <view class="featured-footer">
+                <text class="featured-price">¥{{item.price}}</text>
+                <text class="featured-action">查看详情</text>
+              </view>
+            </view>
+          </view>
+        </swiper-item>
+      </swiper>
+    </view>
+
+    <view class="dish-panel" wx:if="{{hotDishes.length > 0}}">
+      <view class="panel-header">
+        <view>
+          <text class="panel-title">热销榜单</text>
+          <text class="panel-subtitle">高销量菜品，适合快速决策</text>
+        </view>
+        <text class="panel-link" bindtap="onViewAllDishes">查看全部</text>
+          </view>
+
+      <view class="dish-list">
+        <view class="dish-row" wx:for="{{hotDishes}}" wx:key="dish_id" wx:if="{{index < 6}}" bindtap="onDishTap" data-id="{{item.dish_id}}">
+          <view class="dish-rank">{{index < 9 ? ('0' + (index + 1)) : (index + 1)}}</view>
+          <image class="dish-thumb" src="{{item.cover_url}}" mode="aspectFill" />
+          <view class="dish-body">
+            <text class="dish-title">{{item.name}}</text>
+            <view class="dish-meta-line">
+              <text class="dish-meta-text">月售 {{item.sales_count}}</text>
+              <text class="dish-meta-text">评分 {{item.rating}}</text>
+            </view>
+            <view class="dish-bottom">
+              <text class="dish-price">¥{{item.price}}</text>
+              <view class="dish-cart" catchtap="onAddToCart" data-item="{{item}}">
+                <text class="dish-cart-plus">＋</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="loading-block" wx:if="{{loading}}">
+      <text class="loading-text">正在加载首页内容...</text>
+  </view>
+
+    <view class="empty-block" wx:if="{{!loading && error}}">
+      <text class="empty-title">首页数据加载失败了</text>
+      <text class="empty-desc">可能是网络波动，重新加载后再试一次。</text>
+      <view class="empty-action" bindtap="onRetry">重新加载</view>
+  </view>
+
+    <view class="empty-block" wx:if="{{!loading && !error && hotDishes.length === 0}}">
+      <text class="empty-title">暂时还没有可展示的菜品</text>
+      <text class="empty-desc">你可以稍后重试，或先进入食堂分类页看看</text>
+      <view class="empty-action" bindtap="onRetry">重新加载</view>
+    </view>
+  </view>
+</view>

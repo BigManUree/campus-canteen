@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "评价",
+  "usingComponents": {
+    "admin-alert-overlay": "/components/admin-alert-overlay/admin-alert-overlay"
+  }
+}

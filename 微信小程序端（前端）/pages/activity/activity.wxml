@@ -1,0 +1,82 @@
+<!-- pages/activity/activity.wxml -->
+<view class="activity-page">
+  <view class="hero-panel">
+    <view class="hero-noise"></view>
+    <view class="hero-content">
+      <text class="hero-kicker">Campus Dining Event</text>
+      <text class="hero-title">活动中心</text>
+      <text class="hero-subtitle">查看美食周、新品上新、主题餐饮日等校园食堂活动</text>
+    </view>
+  </view>
+
+  <admin-alert-overlay
+    show="{{adminAlertOverlay.show}}"
+    alert="{{adminAlertOverlay.alert}}"
+    queueLength="{{adminAlertOverlay.queueLength}}"
+    bind:later="onAdminAlertLater"
+    bind:view="onAdminAlertView"
+  />
+
+  <view wx:if="{{loading}}" class="state-wrapper">
+    <view class="loading-spinner"></view>
+    <text class="state-text">正在装载近期活动...</text>
+  </view>
+
+  <view wx:elif="{{error}}" class="state-wrapper">
+    <text class="state-icon">🪫</text>
+    <text class="state-title">活动加载失败</text>
+    <text class="state-text">请检查网络后重试</text>
+    <button class="retry-btn" bindtap="onRetry">重新加载</button>
+  </view>
+
+  <scroll-view wx:else class="activity-scroll" scroll-y enable-back-to-top>
+    <view wx:if="{{activities.length === 0}}" class="state-wrapper empty">
+      <text class="state-icon">🎈</text>
+      <text class="state-title">暂无活动</text>
+      <text class="state-text">食堂最新活动上线后会第一时间展示在这里</text>
+    </view>
+
+    <view wx:else class="activity-list">
+      <view
+        wx:for="{{activities}}"
+        wx:key="activity_id"
+        class="activity-card"
+        bindtap="onActivityTap"
+        data-id="{{item.activity_id}}"
+      >
+        <image class="activity-cover" src="{{item.cover_image}}" mode="aspectFill"></image>
+        <view class="cover-mask"></view>
+        <view class="cover-topline">
+          <text class="hero-tag">{{item.hero_tag}}</text>
+          <text class="status-chip {{item.status_class}}">{{item.status_text}}</text>
+        </view>
+
+        <view class="activity-content">
+          <text class="activity-title">{{item.title}}</text>
+          <text class="activity-subtitle">{{item.subtitle}}</text>
+          <text class="activity-desc">{{item.content}}</text>
+
+          <view class="meta-grid">
+            <view class="meta-item">
+              <text class="meta-label">时间</text>
+              <text class="meta-value">{{item.start_time_text}} - {{item.end_time_text}}</text>
+            </view>
+            <view class="meta-item">
+              <text class="meta-label">地点</text>
+              <text class="meta-value">{{item.location}}</text>
+            </view>
+            <view class="meta-item">
+              <text class="meta-label">主办方</text>
+              <text class="meta-value">{{item.organizer}}</text>
+            </view>
+          </view>
+
+          <view class="card-footer">
+            <text class="detail-text">查看活动详情</text>
+            <text class="detail-arrow">→</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

@@ -1,0 +1,325 @@
+<!--pages/order/confirm.wxml-->
+<view class="confirm-page">
+  <view class="ambient ambient-1"></view>
+  <view class="ambient ambient-2"></view>
+
+  <admin-alert-overlay
+    show="{{adminAlertOverlay.show}}"
+    alert="{{adminAlertOverlay.alert}}"
+    queueLength="{{adminAlertOverlay.queueLength}}"
+    bind:later="onAdminAlertLater"
+    bind:view="onAdminAlertView"
+  />
+
+  <view class="custom-navbar">
+    <view class="navbar-left" bindtap="onBack">
+      <text class="back-icon">←</text>
+    </view>
+    <view class="navbar-title">确认订单</view>
+    <view class="navbar-right"></view>
+  </view>
+
+  <view class="skeleton-wrapper" wx:if="{{loading}}">
+    <view class="skeleton-card hero-skeleton">
+      <view class="skeleton-line shimmer wide"></view>
+      <view class="skeleton-line shimmer mid"></view>
+      <view class="skeleton-line shimmer short"></view>
+    </view>
+    <view class="skeleton-card" wx:for="{{[1,2,3]}}" wx:key="*this">
+      <view class="skeleton-line shimmer mid"></view>
+      <view class="skeleton-line shimmer wide"></view>
+    </view>
+  </view>
+
+  <scroll-view class="confirm-scroll" scroll-y="{{true}}" wx:else>
+    <view class="confirm-shell">
+      <view class="hero-panel">
+        <view class="hero-copy">
+          <text class="hero-kicker">CHECKOUT NOTE</text>
+          <text class="hero-title">确认你的这一单</text>
+          <text class="hero-subtitle">核对取餐方式、地址、优惠和备注信息，确认后就可以提交给商家处理。</text>
+        </view>
+
+        <view class="hero-stats">
+          <view class="hero-stat warm-card">
+            <text class="hero-stat-value">{{items.length}}</text>
+            <text class="hero-stat-label">商品数量</text>
+          </view>
+          <view class="hero-stat cool-card">
+            <text class="hero-stat-value">{{orderType === 'delivery' ? '配送' : '自取'}}</text>
+            <text class="hero-stat-label">取餐方式</text>
+          </view>
+          <view class="hero-stat mint-card">
+            <text class="hero-stat-value">¥{{payAmountText}}</text>
+            <text class="hero-stat-label">待支付</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel-card canteen-card" wx:if="{{canteen}}">
+        <view class="panel-head compact">
+          <text class="panel-title">档口信息</text>
+          <view class="status-chip {{canteen.is_open ? 'open' : 'closed'}}">
+            <text>{{canteen.is_open ? '营业中' : '已打烊'}}</text>
+          </view>
+        </view>
+        <view class="canteen-row">
+          <image class="canteen-avatar" src="{{canteen.image || '/static/default-canteen.png'}}" mode="aspectFill" />
+          <view class="canteen-copy">
+            <text class="canteen-name">{{canteen.canteen_name}}</text>
+            <text class="canteen-location">{{canteen.building}} · {{canteen.floor}} · 窗口 {{canteen.window_no}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel-card">
+        <view class="panel-head">
+          <text class="panel-title">取餐方式</text>
+          <text class="panel-subtitle">选择更适合这次下单的取餐方案</text>
+        </view>
+        <view class="type-selector">
+          <view 
+            class="type-item {{orderType === 'pickup' ? 'active' : ''}}"
+            bindtap="onOrderTypeChange"
+            data-type="pickup"
+          >
+            <view class="type-mark">自取</view>
+            <text class="type-title">到店自取</text>
+            <text class="type-desc">凭取餐码前往档口领取</text>
+          </view>
+          <view 
+            class="type-item {{orderType === 'delivery' ? 'active' : ''}}"
+            bindtap="onOrderTypeChange"
+            data-type="delivery"
+          >
+            <view class="type-mark">配送</view>
+            <text class="type-title">配送到家</text>
+            <text class="type-desc">填写地址后由配送员送达</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel-card" wx:if="{{orderType === 'delivery'}}">
+        <view class="panel-head">
+          <text class="panel-title">配送地址</text>
+          <text class="panel-subtitle">选择本次订单的收货位置</text>
+        </view>
+        <view class="address-shell" wx:if="{{selectedAddress}}" bindtap="onSelectAddress">
+          <view class="address-badge">送</view>
+          <view class="address-main">
+            <view class="address-top">
+              <text class="address-receiver">{{selectedAddress.receiver}}</text>
+              <text class="address-phone">{{selectedAddress.phone}}</text>
+              <text class="address-tag" wx:if="{{selectedAddress.is_default}}">默认</text>
+            </view>
+            <text class="address-detail">{{selectedAddress.building}} {{selectedAddress.room}}</text>
+          </view>
+          <text class="cell-arrow">›</text>
+        </view>
+        <view class="empty-action" wx:else bindtap="onAddAddress">
+          <text class="empty-action-icon">＋</text>
+          <text class="empty-action-text">添加收货地址</text>
+        </view>
+      </view>
+
+      <view class="panel-card">
+        <view class="panel-head">
+          <text class="panel-title">预约时间</text>
+          <text class="panel-subtitle">{{orderType === 'delivery' ? '默认尽快送达，也可以改成指定时间' : '请选择取餐时间，未选择时默认尽快送达'}} </text>
+        </view>
+        <picker mode="multiSelector" value="{{timePickerValue}}" range="{{timePickerRange}}" bindchange="onTimePickerChange">
+          <view class="select-cell">
+            <view class="select-copy">
+              <text class="select-label">时间安排</text>
+              <text wx:if="{{pickupTime}}" class="select-value">{{pickupTime}}</text>
+              <text wx:else class="select-placeholder">尽快送达</text>
+            </view>
+            <text class="cell-arrow">›</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="panel-card">
+        <view class="panel-head">
+          <text class="panel-title">商品清单</text>
+          <text class="panel-subtitle">共 {{items.length}} 件商品，提交前请再次确认</text>
+        </view>
+        <view class="items-list">
+          <view class="item-card" wx:for="{{items}}" wx:key="dish_id">
+            <image class="item-image" src="{{item.cover_url || '/static/default-dish.png'}}" mode="aspectFill" />
+            <view class="item-main">
+              <text class="item-name">{{item.dish_name}}</text>
+              <view class="item-tags" wx:if="{{item.tags && item.tags.length > 0}}">
+                <text class="item-tag" wx:for="{{item.tags}}" wx:key="*this" wx:for-item="tag">{{tag}}</text>
+              </view>
+              <view class="item-meta">
+                <text class="item-price">¥{{item.price}}</text>
+                <text class="item-quantity">×{{item.quantity}}</text>
+              </view>
+            </view>
+            <text class="item-total">¥{{item.total}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel-card">
+        <view class="panel-head">
+          <text class="panel-title">优惠券</text>
+          <text class="panel-subtitle">{{coupons.length > 0 ? ('当前有 ' + coupons.length + ' 张可用优惠券') : '当前暂无可用优惠券'}}</text>
+        </view>
+        <view class="select-cell coupon-cell" bindtap="onSelectCoupon">
+          <view class="select-copy">
+            <text class="select-label">优惠方案</text>
+            <text wx:if="{{selectedCoupon}}" class="select-value">{{selectedCoupon.coupon.name}}</text>
+            <text wx:elif="{{hasExplicitNoCoupon}}" class="select-value">不使用优惠券</text>
+            <text wx:else class="select-placeholder">{{coupons.length > 0 ? '选择优惠券' : '暂无可用优惠券'}}</text>
+          </view>
+          <view class="select-extra">
+            <text wx:if="{{selectedCoupon}}" class="coupon-discount">-¥{{discountAmountText}}</text>
+            <text class="cell-arrow">›</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel-card">
+        <view class="panel-head">
+          <text class="panel-title">备注信息</text>
+          <text class="panel-subtitle">口味偏好、特殊要求等都可以提前说明</text>
+        </view>
+        <view class="remark-shell">
+          <textarea 
+            class="remark-textarea" 
+            placeholder="例如：少辣、不要香菜、米饭单独打包..."
+            placeholder-class="remark-placeholder"
+            value="{{remark}}"
+            bindinput="onRemarkInput"
+            maxlength="200"
+            show-confirm-bar="{{false}}"
+          />
+          <text class="remark-counter">{{remark.length}}/200</text>
+        </view>
+      </view>
+
+      <view class="panel-card amount-card">
+        <view class="panel-head">
+          <text class="panel-title">费用明细</text>
+          <text class="panel-subtitle">下单前请确认最终支付金额</text>
+        </view>
+        <view class="amount-list">
+          <view class="amount-row">
+            <text class="amount-label">商品总额</text>
+            <text class="amount-value">¥{{totalAmountText}}</text>
+          </view>
+          <view class="amount-row" wx:if="{{orderType === 'delivery'}}">
+            <text class="amount-label">配送费</text>
+            <text class="amount-value free">免费</text>
+          </view>
+          <view class="amount-row" wx:if="{{discountAmount > 0}}">
+            <text class="amount-label">优惠券</text>
+            <text class="amount-value discount">-¥{{discountAmountText}}</text>
+          </view>
+        </view>
+        <view class="amount-divider"></view>
+        <view class="amount-total">
+          <text class="total-label">实付金额</text>
+          <view class="total-right">
+            <text class="total-symbol">¥</text>
+            <text class="total-value">{{payAmountText}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel-card notice-card">
+        <view class="panel-head">
+          <text class="panel-title">订单须知</text>
+          <text class="panel-subtitle">提交前建议快速浏览一下</text>
+        </view>
+        <view class="notice-list">
+          <view class="notice-item">
+            <text class="notice-dot">•</text>
+            <text class="notice-text">请在预约时间前往取餐，超时可能影响菜品口感。</text>
+          </view>
+          <view class="notice-item">
+            <text class="notice-dot">•</text>
+            <text class="notice-text">如需修改订单，请在商家接单前及时处理。</text>
+          </view>
+          <view class="notice-item">
+            <text class="notice-dot">•</text>
+            <text class="notice-text">支付成功后，订单将自动提交给商家开始制作。</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="bottom-placeholder"></view>
+    </view>
+  </scroll-view>
+
+  <view class="submit-bar" wx:if="{{!loading}}">
+    <view class="submit-shell">
+      <view class="submit-meta">
+        <text class="submit-title">待支付 ¥{{payAmountText}}</text>
+        <text class="submit-desc" wx:if="{{discountAmount > 0}}">已优惠 ¥{{discountAmountText}}</text>
+        <text class="submit-desc" wx:elif="{{!canSubmitOrder && orderType === 'delivery'}}">请选择配送时间和地址后再结算</text>
+        <text class="submit-desc" wx:elif="{{!canSubmitOrder}}">请选择取餐时间后再支付</text>
+        <text class="submit-desc" wx:else>确认无误后即可提交订单</text>
+      </view>
+      <button class="submit-btn {{!canSubmitOrder ? 'disabled' : ''}}" bindtap="onSubmitOrder" disabled="{{!canSubmitOrder}}">
+        <text class="submit-btn-icon">✓</text>
+        <text class="submit-btn-text">提交订单</text>
+      </button>
+    </view>
+  </view>
+
+  <view class="coupon-modal {{showCouponModal ? 'show' : ''}}" catchtap="onCloseCouponModal">
+    <view class="coupon-modal-panel" catchtap="stopPropagation">
+      <view class="modal-head">
+        <text class="modal-title">选择优惠券</text>
+        <text class="modal-close" bindtap="onCloseCouponModal">✕</text>
+      </view>
+
+      <scroll-view class="coupon-list" scroll-y="{{true}}">
+        <view class="coupon-card-item no-coupon {{tempSelectedCoupon === '__NO_COUPON__' ? 'selected' : ''}}" bindtap="onCouponSelect" data-index="-1">
+          <view class="coupon-left">
+            <view class="coupon-badge muted">不使用</view>
+            <view class="coupon-copy">
+              <text class="coupon-title">不使用优惠券</text>
+              <text class="coupon-desc">本次订单按商品原价结算</text>
+            </view>
+          </view>
+          <text class="coupon-check" wx:if="{{tempSelectedCoupon === '__NO_COUPON__'}}">✓</text>
+        </view>
+
+        <view 
+          class="coupon-card-item {{tempSelectedCoupon && tempSelectedCoupon !== '__NO_COUPON__' && tempSelectedCoupon._selectKey === item._selectKey ? 'selected' : ''}}" 
+          wx:for="{{coupons}}" 
+          wx:key="_selectKey"
+          bindtap="onCouponSelect"
+          data-index="{{index}}"
+        >
+          <view class="coupon-left">
+            <view class="coupon-amount-box {{item.coupon_suffix_text ? 'discount-box' : 'cash-box'}}">
+              <text wx:if="{{item.coupon_unit_text}}" class="coupon-symbol">{{item.coupon_unit_text}}</text>
+              <text class="coupon-value {{item.coupon_suffix_text ? 'discount-value' : 'cash-value'}}">{{item.coupon_display_value}}</text>
+              <text wx:if="{{item.coupon_suffix_text}}" class="coupon-suffix">{{item.coupon_suffix_text}}</text>
+            </view>
+            <view class="coupon-copy">
+              <text class="coupon-title">{{item.coupon.name}}</text>
+              <text class="coupon-desc">满¥{{item.coupon.min_amount}}可用</text>
+              <text class="coupon-time">有效期至 {{item.expire_time_text}}</text>
+            </view>
+          </view>
+          <text class="coupon-check" wx:if="{{tempSelectedCoupon && tempSelectedCoupon !== '__NO_COUPON__' && tempSelectedCoupon._selectKey === item._selectKey}}">✓</text>
+        </view>
+
+        <view class="coupon-empty" wx:if="{{coupons.length === 0}}">
+          <text class="coupon-empty-icon">🎫</text>
+          <text class="coupon-empty-text">暂无可用优惠券</text>
+        </view>
+      </scroll-view>
+
+      <view class="modal-footer">
+        <button class="modal-confirm-btn" bindtap="onConfirmCoupon">确定</button>
+      </view>
+    </view>
+  </view>
+</view>

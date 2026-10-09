@@ -1,0 +1,153 @@
+<!-- pages/faq/faq.wxml -->
+<wxs module="utils">
+  var isExpanded = function(expandedIds, id) {
+    for (var i = 0; i < expandedIds.length; i++) {
+      if (expandedIds[i] === id) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  var getCount = function(list) {
+    return list ? list.length : 0;
+  }
+
+  module.exports = {
+    isExpanded: isExpanded,
+    getCount: getCount
+  }
+</wxs>
+
+<view class="faq-page">
+  <view class="ambient ambient-1"></view>
+  <view class="ambient ambient-2"></view>
+
+<admin-alert-overlay
+  show="{{adminAlertOverlay.show}}"
+  alert="{{adminAlertOverlay.alert}}"
+  queueLength="{{adminAlertOverlay.queueLength}}"
+  bind:later="onAdminAlertLater"
+  bind:view="onAdminAlertView"
+/>
+
+  <scroll-view class="faq-scroll" scroll-y="{{true}}" enhanced>
+    <view class="faq-shell">
+      <view class="hero-panel">
+        <view class="hero-copy">
+          <text class="hero-kicker">HELP CENTER</text>
+          <text class="hero-title">常见问题</text>
+          <text class="hero-subtitle">把大家最常遇到的问题整理成一页，搜索、筛选、展开就能快速找到答案。</text>
+        </view>
+
+        <view class="hero-stats">
+          <view class="hero-stat warm-card">
+            <text class="hero-stat-value">{{categories.length - 1}}</text>
+            <text class="hero-stat-label">问题分类</text>
+          </view>
+          <view class="hero-stat cool-card">
+            <text class="hero-stat-value">{{utils.getCount(filteredList)}}</text>
+            <text class="hero-stat-label">当前结果</text>
+          </view>
+          <view class="hero-stat mint-card">
+            <text class="hero-stat-value">{{utils.getCount(faqList)}}</text>
+            <text class="hero-stat-label">全部问题</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="search-panel">
+        <view class="search-box">
+          <text class="search-icon">⌕</text>
+      <input 
+        class="search-input" 
+            placeholder="搜索问题、答案或关键词"
+            placeholder-class="search-placeholder"
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+      />
+          <view wx:if="{{searchKeyword}}" class="search-clear" bindtap="onClearSearch">
+            <text>✕</text>
+    </view>
+        </view>
+        <text class="search-tip">支持按问题标题和答案内容查找</text>
+  </view>
+
+      <view class="category-panel">
+        <view class="section-head">
+          <text class="section-title">分类浏览</text>
+          <text class="section-meta">当前：{{activeCategory}}</text>
+        </view>
+        <scroll-view class="tabs-scroll" scroll-x="{{true}}" show-scrollbar="{{false}}">
+      <view class="tabs-wrapper">
+        <view 
+          wx:for="{{categories}}" 
+          wx:key="*this" 
+          class="tab-item {{activeCategory === item ? 'active' : ''}}"
+          bindtap="onCategoryChange"
+          data-category="{{item}}"
+        >
+              <text class="tab-text">{{item}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+      <view wx:if="{{loading}}" class="loading-panel">
+        <view class="loading-orbit"></view>
+        <text class="loading-title">正在整理帮助内容</text>
+        <text class="loading-desc">马上就好，请稍等一下</text>
+      </view>
+
+      <block wx:else>
+        <view wx:if="{{filteredList.length === 0}}" class="empty-panel">
+          <view class="empty-badge">?</view>
+          <text class="empty-title">没有找到相关问题</text>
+          <text class="empty-desc">可以换个关键词试试，或者切换到其他分类查看更多内容。</text>
+  </view>
+
+        <view wx:else class="faq-panel">
+          <view class="section-head faq-head">
+            <text class="section-title">问题列表</text>
+            <text class="section-meta">共 {{filteredList.length}} 条</text>
+    </view>
+
+          <view class="faq-list">
+      <view 
+        wx:for="{{filteredList}}" 
+        wx:key="faq_id" 
+        class="faq-card {{utils.isExpanded(expandedIds, item.faq_id) ? 'expanded' : ''}}"
+      >
+              <view class="faq-card-top" catchtap="onToggleFAQ" data-id="{{item.faq_id}}">
+                <view class="faq-marker">Q</view>
+                <view class="faq-copy">
+                  <text class="faq-question">{{item.question}}</text>
+                  <view class="faq-meta-row">
+                    <text class="faq-category">{{item.category || '其他问题'}}</text>
+                    <text wx:if="{{item.view_count}}" class="faq-views">{{item.view_count}} 次查看</text>
+                  </view>
+          </view>
+                <view class="faq-toggle {{utils.isExpanded(expandedIds, item.faq_id) ? 'expanded' : ''}}">
+                  <text class="faq-toggle-icon">⌄</text>
+          </view>
+        </view>
+
+              <view wx:if="{{utils.isExpanded(expandedIds, item.faq_id)}}" class="faq-answer-wrap">
+                <view class="answer-divider"></view>
+                <view class="answer-head">
+                  <view class="answer-marker">A</view>
+                  <text class="answer-title">详细解答</text>
+          </view>
+                <text class="faq-answer">{{item.answer}}</text>
+        </view>
+      </view>
+    </view>
+
+          <view class="list-footer">
+            <text class="footer-text">已经到底啦，以上就是当前分类的全部问题</text>
+          </view>
+        </view>
+      </block>
+    </view>
+  </scroll-view>
+</view>

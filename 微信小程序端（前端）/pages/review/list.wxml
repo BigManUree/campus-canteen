@@ -1,0 +1,105 @@
+<view class="review-list-page">
+  <view class="ambient ambient-1"></view>
+  <view class="ambient ambient-2"></view>
+
+  <admin-alert-overlay
+    show="{{adminAlertOverlay.show}}"
+    alert="{{adminAlertOverlay.alert}}"
+    queueLength="{{adminAlertOverlay.queueLength}}"
+    bind:later="onAdminAlertLater"
+    bind:view="onAdminAlertView"
+  />
+
+  <scroll-view
+    class="review-scroll"
+    scroll-y="{{true}}"
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{refreshing}}"
+    bindrefresherrefresh="onPullDownRefresh"
+    bindscrolltolower="onReachBottom"
+  >
+    <view class="review-shell">
+      <view class="hero-panel">
+        <text class="hero-kicker">ALL REVIEWS</text>
+        <text class="hero-title">{{dishName || '全部评价'}}</text>
+        <text class="hero-subtitle">查看完整评价内容、商家回复，以及匿名或实名展示状态。</text>
+
+        <view class="hero-meta">
+          <view class="hero-meta-chip">
+            <text class="hero-meta-value">{{total}}</text>
+            <text class="hero-meta-label">总评价</text>
+          </view>
+          <view class="hero-meta-chip muted">
+            <text class="hero-meta-value">{{page}}</text>
+            <text class="hero-meta-label">当前页</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="state-card" wx:if="{{loading && reviews.length === 0}}">
+        <view class="loading-orbit"></view>
+        <text class="state-title">正在加载全部评价...</text>
+        <text class="state-desc">稍等一下，真实反馈马上送达。</text>
+      </view>
+
+      <view class="review-list" wx:if="{{reviews.length > 0}}">
+        <view class="review-card" wx:for="{{reviews}}" wx:key="review_id">
+          <view class="review-head">
+            <view class="review-user-wrap">
+              <image class="review-avatar" src="{{item.user_avatar || '/static/default-avatar.png'}}" mode="aspectFill" />
+              <view class="review-user-copy">
+                <view class="review-user-row">
+                  <text class="review-user-name">{{item.user_name || '匿名用户'}}</text>
+                  <text class="identity-badge {{item.is_anonymous ? 'anonymous' : 'named'}}">{{item.is_anonymous ? '匿名' : '实名'}}</text>
+                </view>
+                <view class="review-rating">
+                  <text class="star filled" wx:for="{{item.rating}}" wx:key="*this">★</text>
+                  <text class="star" wx:for="{{5 - item.rating}}" wx:key="*this">★</text>
+                </view>
+              </view>
+            </view>
+            <text class="review-time">{{item.create_time_text}}</text>
+          </view>
+
+          <text class="review-content" wx:if="{{item.content}}">{{item.content}}</text>
+          <text class="review-content empty" wx:else>该用户没有填写文字评价</text>
+
+          <view class="review-images" wx:if="{{item.images && item.images.length > 0}}">
+            <image
+              class="review-image"
+              wx:for="{{item.images}}"
+              wx:key="*this"
+              wx:for-item="img"
+              src="{{img}}"
+              mode="aspectFill"
+              bindtap="onPreviewReviewImage"
+              data-images="{{item.images}}"
+              data-index="{{index}}"
+            />
+          </view>
+
+          <view class="merchant-reply" wx:if="{{item.reply_content}}">
+            <view class="merchant-reply-head">
+              <text class="merchant-reply-tag">商家回复</text>
+              <text class="merchant-reply-time" wx:if="{{item.reply_time_text}}">{{item.reply_time_text}}</text>
+            </view>
+            <text class="merchant-reply-content">{{item.reply_content}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="state-card empty-card" wx:if="{{!loading && reviews.length === 0}}">
+        <text class="state-emoji">💭</text>
+        <text class="state-title">还没有评价内容</text>
+        <text class="state-desc">当前菜品暂时没有用户评价，稍后再来看看。</text>
+      </view>
+
+      <view class="load-tip" wx:if="{{reviews.length > 0}}">
+        <text wx:if="{{loadingMore}}">正在加载更多评价...</text>
+        <text wx:elif="{{hasMore}}">继续上滑，查看更多真实反馈</text>
+        <text wx:else>已经到底啦，全部评价都在这里</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>
+

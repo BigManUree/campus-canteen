@@ -1,0 +1,184 @@
+<!--pages/refund/apply.wxml-->
+<view class="refund-page">
+  <view class="ambient ambient-1"></view>
+  <view class="ambient ambient-2"></view>
+
+  <view class="nav-bar">
+    <view class="nav-back" bindtap="onBack">
+      <text class="icon">‹</text>
+    </view>
+    <text class="nav-title">申请退款</text>
+  </view>
+
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <scroll-view class="refund-container" scroll-y="{{true}}" wx:if="{{!loading && order}}">
+    <view class="refund-shell">
+      <view class="hero-panel">
+        <view class="hero-copy">
+          <text class="hero-kicker">REFUND REQUEST</text>
+          <text class="hero-title">发起退款申请</text>
+          <text class="hero-subtitle">确认退款类型、菜品范围和原因后，提交给商家审核。</text>
+        </view>
+      </view>
+
+      <view class="section-card order-info">
+        <text class="section-title">订单信息</text>
+        <view class="info-row">
+          <text class="label">订单号</text>
+          <text class="value">{{order.order_no}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">订单金额</text>
+          <text class="value primary">¥{{order.pay_amount_text}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">下单时间</text>
+          <text class="value">{{order.create_time_text}}</text>
+        </view>
+      </view>
+
+      <view class="section-card refund-type">
+        <text class="section-title">退款类型</text>
+        <view class="type-options">
+          <view class="type-option {{refundType === 'full' ? 'active' : ''}}" bindtap="onRefundTypeChange" data-type="full">
+            <view class="option-mark">全额</view>
+            <text class="type-label">全额退款</text>
+          </view>
+          <view class="type-option {{refundType === 'partial' ? 'active' : ''}}" bindtap="onRefundTypeChange" data-type="partial">
+            <view class="option-mark">部分</view>
+            <text class="type-label">部分退款</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="section-card dish-selection" wx:if="{{refundType === 'partial'}}">
+        <view class="section-head">
+          <text class="section-title">选择退款菜品</text>
+          <text class="section-subtitle">支持直接输入退款份数，不超过已购数量；退款金额会自动计算且不会超过实付金额</text>
+        </view>
+        <view class="dish-list" wx:if="{{order.dishes.length > 0}}">
+          <view 
+            class="dish-item {{dish.selectedQuantity > 0 ? 'selected' : ''}}"
+            wx:for="{{order.dishes}}"
+            wx:for-item="dish"
+            wx:key="_index"
+          >
+            <view class="dish-main-row">
+              <image class="dish-image" src="{{dish.image}}" mode="aspectFill" />
+              <view class="dish-info">
+                <view class="dish-head">
+                  <text class="dish-name">{{dish.name}}</text>
+                  <text class="dish-total">¥{{dish.lineRefundableAmountText}}</text>
+                </view>
+                <view class="dish-meta">
+                  <text class="dish-price">单份可退 ¥{{dish.unitRefundableAmountText}}</text>
+                  <text class="dish-quantity">已购 ×{{dish.quantity}}</text>
+                </view>
+                <text class="dish-tip">可退 0 ~ {{dish.maxRefundQuantity}} 份</text>
+              </view>
+              <view class="dish-stepper">
+                <view class="step-btn {{dish.selectedQuantity <= 0 ? 'disabled' : ''}}" bindtap="onChangeDishQuantity" data-index="{{index}}" data-action="decrease">
+                  <text class="step-icon">－</text>
+                </view>
+                <input
+                  class="step-input"
+                  type="number"
+                  value="{{dish.selectedQuantity}}"
+                  bindinput="onDishQuantityInput"
+                  bindblur="onDishQuantityBlur"
+                  data-index="{{index}}"
+                />
+                <view class="step-btn {{dish.selectedQuantity >= dish.maxRefundQuantity ? 'disabled' : ''}}" bindtap="onChangeDishQuantity" data-index="{{index}}" data-action="increase">
+                  <text class="step-icon">＋</text>
+                </view>
+              </view>
+            </view>
+            <view class="dish-amount-editor" wx:if="{{dish.selectedQuantity > 0}}">
+              <text class="dish-amount-label">退款金额</text>
+              <input
+                class="dish-amount-input"
+                type="digit"
+                value="{{dish.manualRefundAmountInput}}"
+                placeholder="最高 ¥{{dish.max_dish_refund_amount_text || dish.lineRefundableAmountText}}"
+                bindinput="onDishRefundAmountInput"
+                bindblur="onDishRefundAmountBlur"
+                data-index="{{index}}"
+              />
+              <text class="dish-amount-hint">单菜最高 ¥{{dish.max_dish_refund_amount_text || dish.lineRefundableAmountText}}</text>
+            </view>
+          </view>
+        </view>
+        <view class="empty-tip" wx:else>
+          <text>暂无可退款的菜品</text>
+        </view>
+      </view>
+
+      <view class="section-card refund-summary" wx:if="{{refundType === 'partial' && selectedDishes.length > 0}}">
+        <view class="section-head compact-summary">
+          <text class="section-title">已选退款明细</text>
+          <text class="summary-total">¥{{refundAmountText}}</text>
+        </view>
+        <view class="summary-list">
+          <view class="summary-item" wx:for="{{selectedDishes}}" wx:for-item="item" wx:key="_index">
+            <view class="summary-copy">
+              <text class="summary-name">{{item.name}} ×{{item.refund_quantity}}</text>
+              <text class="summary-sub">最高可退 ¥{{item.max_dish_refund_amount_text}}</text>
+            </view>
+            <text class="summary-amount">退 ¥{{item.refund_amount_text}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="section-card refund-reason">
+        <text class="section-title">退款原因</text>
+        <view class="reason-options">
+          <view 
+            class="reason-option {{reasonCategory === item.value ? 'active' : ''}}"
+            wx:for="{{reasonOptions}}"
+            wx:key="value"
+            bindtap="onReasonChange"
+            data-value="{{item.value}}"
+          >
+            <text class="reason-label">{{item.label}}</text>
+          </view>
+        </view>
+        <view class="reason-detail">
+          <textarea 
+            class="detail-input"
+            placeholder="请详细说明退款原因（必填）"
+            placeholder-class="detail-placeholder"
+            value="{{reasonDetail}}"
+            bindinput="onReasonInput"
+            maxlength="200"
+            show-confirm-bar="{{false}}"
+          />
+          <text class="char-count">{{reasonDetail.length}}/200</text>
+        </view>
+      </view>
+
+      <view class="section-card refund-amount">
+        <view class="amount-row">
+          <text class="amount-label">退款金额</text>
+          <text class="amount-value">¥{{refundAmountText}}</text>
+        </view>
+        <view class="amount-tip" wx:if="{{refundType === 'partial'}}">
+          <text wx:if="{{selectedDishCount > 0}}">已选择 {{selectedDishCount}} 个菜品，共 {{selectedDishQuantity}} 份；退款金额不超过实付 ¥{{order.pay_amount_text}}</text>
+          <text wx:else>请输入要退款的菜品份数，系统会自动计算金额</text>
+        </view>
+      </view>
+
+      <view class="submit-section">
+        <button class="submit-btn {{submitting ? 'disabled' : ''}}" bindtap="onSubmit" disabled="{{submitting}}">
+          {{submitting ? '提交中...' : '提交申请'}}
+        </button>
+        <view class="submit-tip">
+          <text>提交后将由商家审核，请耐心等待</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

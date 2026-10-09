@@ -1,0 +1,61 @@
+<!--pages/refund/detail.wxml-->
+<view class="refund-detail-page">
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+
+<admin-alert-overlay
+  show="{{adminAlertOverlay.show}}"
+  alert="{{adminAlertOverlay.alert}}"
+  queueLength="{{adminAlertOverlay.queueLength}}"
+  bind:later="onAdminAlertLater"
+  bind:view="onAdminAlertView"
+/>
+    <text class="loading-text">退款详情加载中...</text>
+  </view>
+
+  <scroll-view class="detail-scroll" scroll-y="{{true}}" wx:if="{{!loading && refund}}">
+    <view class="hero-card">
+      <view class="hero-top">
+        <text class="hero-title">退款详情</text>
+        <view class="status-pill" style="background: {{refund.status_bg}}; color: {{refund.status_color}};">
+          <text>{{refund.status_text}}</text>
+        </view>
+      </view>
+      <text class="refund-no">退款单号：{{refund.refund_id}}</text>
+      <text class="refund-amount">¥{{refund.refund_amount_text}}</text>
+      <text class="refund-time">申请时间：{{refund.create_time_text}}</text>
+    </view>
+
+    <view class="panel">
+      <view class="panel-title">订单信息</view>
+      <view class="info-row" bindtap="onViewOrder">
+        <text class="label">关联订单</text>
+        <text class="value link">{{refund.order_no_text}} ›</text>
+      </view>
+      <view class="info-row">
+        <text class="label">退款类型</text>
+        <text class="value">{{refund.refund_type === 'partial' ? '部分退款' : '全额退款'}}</text>
+      </view>
+    </view>
+
+    <view class="panel">
+      <view class="panel-title">退款原因</view>
+      <view class="info-block">
+        <text class="reason-text">{{refund.reason || '无'}}</text>
+      </view>
+    </view>
+
+    <view class="panel" wx:if="{{refund.admin_remark || refund.approve_time_text}}">
+      <view class="panel-title">审核信息</view>
+      <view class="info-row" wx:if="{{refund.admin_remark}}">
+        <text class="label">审核备注</text>
+        <text class="value multiline">{{refund.admin_remark}}</text>
+      </view>
+      <view class="info-row" wx:if="{{refund.approve_time_text}}">
+        <text class="label">审核时间</text>
+        <text class="value">{{refund.approve_time_text}}</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>
+

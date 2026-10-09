@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "个人中心",
+  "usingComponents": {
+    "admin-alert-overlay": "/components/admin-alert-overlay/admin-alert-overlay"
+  }
+}

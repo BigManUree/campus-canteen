@@ -1,0 +1,18 @@
+<view class="state-view">
+  <view wx:if="{{loading}}" class="state-loading">
+    <view class="spinner"></view>
+    <text class="state-text">{{loadingText}}</text>
+  </view>
+
+  <view wx:elif="{{error}}" class="state-error">
+    <text class="state-title">{{errorText}}</text>
+    <button wx:if="{{showRetry}}" class="btn-retry" bindtap="onRetryTap">重试</button>
+    <slot name="action"></slot>
+  </view>
+
+  <view wx:elif="{{empty}}" class="state-empty">
+    <text class="state-title">{{emptyText}}</text>
+    <slot name="action"></slot>
+  </view>
+</view>
+

@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "订单详情",
+  "usingComponents": {
+    "admin-alert-overlay": "/components/admin-alert-overlay/admin-alert-overlay"
+  }
+}

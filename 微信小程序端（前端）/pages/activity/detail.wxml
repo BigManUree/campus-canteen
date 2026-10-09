@@ -1,0 +1,72 @@
+<!-- pages/activity/detail.wxml -->
+<view class="detail-page">
+  <view class="detail-navbar">
+    <view class="nav-back" bindtap="onBack">←</view>
+    <text class="nav-title">活动详情</text>
+    <view class="nav-placeholder"></view>
+  </view>
+
+  <admin-alert-overlay
+    show="{{adminAlertOverlay.show}}"
+    alert="{{adminAlertOverlay.alert}}"
+    queueLength="{{adminAlertOverlay.queueLength}}"
+    bind:later="onAdminAlertLater"
+    bind:view="onAdminAlertView"
+  />
+
+  <view wx:if="{{loading}}" class="state-wrapper">
+    <view class="loading-spinner"></view>
+    <text class="state-text">正在加载活动详情...</text>
+  </view>
+
+  <view wx:elif="{{error}}" class="state-wrapper">
+    <text class="state-icon">📭</text>
+    <text class="state-title">活动详情加载失败</text>
+    <button class="retry-btn" bindtap="onRetry">重试</button>
+  </view>
+
+  <scroll-view wx:else class="detail-scroll" scroll-y>
+    <view class="cover-shell" bindtap="onPreviewImage">
+      <image class="cover-image" src="{{activity.cover_image}}" mode="aspectFill"></image>
+      <view class="cover-shadow"></view>
+      <view class="cover-status {{activity.status_class}}">{{activity.status_text}}</view>
+    </view>
+
+    <view class="content-shell">
+      <view class="headline-card">
+        <text class="activity-title">{{activity.title}}</text>
+        <text class="activity-subtitle">{{activity.subtitle}}</text>
+      </view>
+
+      <view class="info-card">
+        <view class="section-title">活动信息</view>
+        <view class="info-row">
+          <text class="info-label">活动时间</text>
+          <text class="info-value">{{activity.start_time_text}} - {{activity.end_time_text}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">活动地点</text>
+          <text class="info-value">{{activity.location}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">主办方</text>
+          <text class="info-value">{{activity.organizer}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">联系人</text>
+          <text class="info-value">{{activity.contact_name}}</text>
+        </view>
+        <view class="info-row last">
+          <text class="info-label">联系电话</text>
+          <text class="info-link" bindtap="onCallContact">{{activity.contact_phone}}</text>
+        </view>
+      </view>
+
+      <view class="content-card">
+        <view class="section-title">活动介绍</view>
+        <text class="content-text">{{activity.content}}</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>
+

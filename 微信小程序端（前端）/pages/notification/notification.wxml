@@ -1,0 +1,206 @@
+<!--pages/notification/notification.wxml-->
+<wxs module="utils">
+  var isSelected = function(selectedIds, id) {
+    var target = String(id)
+    for (var i = 0; i < selectedIds.length; i++) {
+      if (String(selectedIds[i]) === target) {
+        return true
+      }
+    }
+    return false
+  }
+
+  module.exports = {
+    isSelected: isSelected
+  }
+</wxs>
+
+<view class="notice-page">
+  <view class="ambient ambient-1"></view>
+  <view class="ambient ambient-2"></view>
+
+  <admin-alert-overlay
+    show="{{adminAlertOverlay.show}}"
+    alert="{{adminAlertOverlay.alert}}"
+    queueLength="{{adminAlertOverlay.queueLength}}"
+    bind:later="onAdminAlertLater"
+    bind:view="onAdminAlertView"
+  />
+
+  <scroll-view
+    class="notice-scroll"
+    scroll-y="{{true}}"
+    bindscrolltolower="loadMore"
+    lower-threshold="{{100}}"
+    enhanced
+  >
+    <view class="notice-shell">
+      <view class="hero-panel">
+        <view class="hero-top">
+          <view class="hero-copy">
+            <text class="hero-kicker">MESSAGE HUB</text>
+            <text class="hero-title">通知中心</text>
+            <text class="hero-subtitle">订单进度、退款结果、系统提醒和活动消息，都会在这里集中更新。</text>
+          </view>
+
+          <view class="hero-actions" wx:if="{{!editMode}}">
+            <view class="hero-action secondary" bindtap="onToggleEditMode" wx:if="{{notifications.length > 0}}">
+              <text>管理</text>
+            </view>
+            <view class="hero-action" bindtap="onMarkAllRead" wx:if="{{unreadCount > 0}}">
+              <text>全部已读</text>
+            </view>
+            <view class="hero-action danger" bindtap="onClearAll" wx:if="{{notifications.length > 0}}">
+              <text>清空</text>
+            </view>
+          </view>
+
+          <view class="hero-actions" wx:if="{{editMode}}">
+            <view class="hero-action secondary" bindtap="onToggleEditMode">
+              <text>取消</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="hero-stats">
+          <view class="hero-stat warm-card">
+            <text class="hero-stat-value">{{allNotifications.length}}</text>
+            <text class="hero-stat-label">全部消息</text>
+          </view>
+          <view class="hero-stat cool-card">
+            <text class="hero-stat-value">{{unreadCount}}</text>
+            <text class="hero-stat-label">未读消息</text>
+          </view>
+          <view class="hero-stat mint-card">
+            <text class="hero-stat-value">{{notifications.length}}</text>
+            <text class="hero-stat-label">当前展示</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="edit-toolbar" wx:if="{{editMode}}">
+        <view class="toolbar-left">
+          <view class="select-all" bindtap="onToggleSelectAll">
+            <view class="checkbox-wrapper {{notifications.length > 0 && selectedIds.length === notifications.length ? 'checked' : ''}}">
+              <view class="checkbox-check"></view>
+            </view>
+            <text class="select-all-text">全选</text>
+          </view>
+          <text class="selected-count">已选 {{selectedIds.length}} 条</text>
+        </view>
+        <view class="toolbar-right">
+          <view class="toolbar-btn {{selectedIds.length === 0 ? 'disabled' : ''}}" bindtap="onBatchMarkRead">
+            <text>标记已读</text>
+          </view>
+          <view class="toolbar-btn danger {{selectedIds.length === 0 ? 'disabled' : ''}}" bindtap="onBatchDelete">
+            <text>删除</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="section-bar" wx:if="{{!loading && notifications.length > 0 && !editMode}}">
+        <view>
+          <text class="section-title">最新消息</text>
+          <text class="section-desc">点击通知查看详情，订单和退款消息可直接跳转处理页面</text>
+        </view>
+        <view class="section-pill">
+          <text>{{hasMore ? '持续更新' : '已同步'}}</text>
+        </view>
+      </view>
+
+      <view class="notification-skeleton" wx:if="{{loading}}">
+        <view class="notification-card skeleton" wx:for="{{[1,2,3,4]}}" wx:key="*this">
+          <view class="icon-shell sk-block"></view>
+          <view class="notification-main">
+            <view class="skeleton-row between">
+              <view class="sk-line w32"></view>
+              <view class="sk-line w22"></view>
+            </view>
+            <view class="sk-line w58"></view>
+            <view class="sk-line w92"></view>
+            <view class="sk-line w68 last"></view>
+          </view>
+        </view>
+      </view>
+
+      <view class="notification-list" wx:if="{{!loading && notifications.length > 0}}">
+        <view
+          class="notification-card {{!item.is_read ? 'unread' : ''}} {{editMode ? 'edit-mode' : ''}} {{item.checked ? 'selected' : ''}}"
+          wx:for="{{notifications}}"
+          wx:key="notification_id"
+          bindtap="{{editMode ? 'onToggleSelect' : 'onNotificationTap'}}"
+          data-id="{{item.notification_id}}"
+          data-item="{{item}}"
+        >
+          <view class="select-column" wx:if="{{editMode}}" catchtap="onToggleSelect" data-id="{{item.notification_id}}">
+            <view class="checkbox-wrapper {{item.checked ? 'checked' : ''}}">
+              <view class="checkbox-check"></view>
+            </view>
+          </view>
+
+          <view class="icon-shell {{item.notification_type}}">
+            <text wx:if="{{item.notification_type === 'order' || item.notification_type === 'order_status'}}">⌘</text>
+            <text wx:elif="{{item.notification_type === 'refund'}}">¥</text>
+            <text wx:elif="{{item.notification_type === 'system'}}">◎</text>
+            <text wx:elif="{{item.notification_type === 'promotion' || item.notification_type === 'activity'}}">✦</text>
+            <text wx:else>•</text>
+          </view>
+
+          <view class="notification-main">
+            <view class="notification-meta">
+              <text class="notification-type">{{item.type_text}}</text>
+              <text class="notification-time">{{item.time_text}}</text>
+            </view>
+
+            <view class="notification-title-row">
+              <view class="notification-title-wrap">
+              <text class="notification-title">{{item.title || '通知'}}</text>
+              <view class="unread-badge" wx:if="{{!item.is_read && !editMode}}">
+                <text>未读</text>
+              </view>
+            </view>
+            <view class="unread-dot" wx:if="{{!item.is_read && !editMode}}"></view>
+            </view>
+
+            <text class="notification-desc">{{item.message}}</text>
+
+            <view class="notification-footer">
+              <view class="status-pill {{item.is_read ? 'read' : 'unread'}}">
+                <text>{{item.is_read ? '已读' : '未读'}}</text>
+              </view>
+
+              <view class="action-link" wx:if="{{item.related_id && (item.notification_type === 'order' || item.notification_type === 'order_status') && !editMode}}" bindtap="onViewOrder" data-order-id="{{item.related_id}}" catchtap="onNoop">
+                <text>查看订单</text>
+              </view>
+
+              <view class="action-link" wx:if="{{item.related_id && item.notification_type === 'refund' && !editMode}}">
+                <text>查看退款详情</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="state-panel" wx:if="{{!loading && !error && notifications.length === 0}}">
+        <view class="state-icon warm">◎</view>
+        <text class="state-title">暂无通知消息</text>
+        <text class="state-desc">新的订单状态、退款进度和系统提醒会第一时间出现在这里。</text>
+      </view>
+
+      <view class="state-panel" wx:if="{{!loading && error}}">
+        <view class="state-icon cool">!</view>
+        <text class="state-title">通知加载失败</text>
+        <text class="state-desc">可能是网络有些波动，重新加载一次看看。</text>
+        <view class="state-btn" bindtap="onRetry">
+          <text>重新加载</text>
+        </view>
+      </view>
+
+      <view class="load-more" wx:if="{{!loading && notifications.length > 0}}">
+        <text class="load-text" wx:if="{{loadingMore}}">正在同步更多消息...</text>
+        <text class="load-text" wx:elif="{{hasMore}}">上滑加载更多通知</text>
+        <text class="load-text end" wx:else>没有更多通知了</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>

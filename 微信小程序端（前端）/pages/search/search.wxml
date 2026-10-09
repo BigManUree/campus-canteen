@@ -1,0 +1,191 @@
+<!-- pages/search/search.wxml -->
+<view class="search-page">
+  <view class="ambient ambient-1"></view>
+  <view class="ambient ambient-2"></view>
+
+  <admin-alert-overlay
+    show="{{adminAlertOverlay.show}}"
+    alert="{{adminAlertOverlay.alert}}"
+    queueLength="{{adminAlertOverlay.queueLength}}"
+    bind:later="onAdminAlertLater"
+    bind:view="onAdminAlertView"
+  />
+
+  <view class="search-shell">
+    <view class="hero-panel">
+      <view class="hero-copy">
+        <text class="hero-kicker">SEARCH HUB</text>
+        <text class="hero-title">搜索菜品与食堂</text>
+        <text class="hero-subtitle">输入关键词，快速找到想吃的菜品、窗口和食堂信息。</text>
+      </view>
+
+      <view class="search-bar">
+        <view class="search-input-wrapper">
+          <text class="search-icon">⌕</text>
+          <input 
+            class="search-input" 
+            type="text" 
+            placeholder="搜索菜品、食堂" 
+            placeholder-class="search-placeholder"
+            value="{{keyword}}"
+            bindinput="onInput"
+            bindconfirm="onSearch"
+            focus="{{autoFocus}}"
+            confirm-type="search"
+          />
+          <text wx:if="{{keyword}}" class="clear-icon" bindtap="onClear">✕</text>
+        </view>
+        <text class="cancel-btn" bindtap="onCancel">取消</text>
+      </view>
+    </view>
+
+    <view wx:if="{{hasSearched}}" class="search-result">
+      <view class="result-tabs">
+        <view class="tab-item {{activeTab === 'all' ? 'active' : ''}}" bindtap="onTabChange" data-tab="all">
+          <text class="tab-text">全部 {{totalCount > 0 ? '(' + totalCount + ')' : ''}}</text>
+        </view>
+        <view class="tab-item {{activeTab === 'dish' ? 'active' : ''}}" bindtap="onTabChange" data-tab="dish">
+          <text class="tab-text">菜品 {{dishCount > 0 ? '(' + dishCount + ')' : ''}}</text>
+        </view>
+        <view class="tab-item {{activeTab === 'canteen' ? 'active' : ''}}" bindtap="onTabChange" data-tab="canteen">
+          <text class="tab-text">食堂 {{canteenCount > 0 ? '(' + canteenCount + ')' : ''}}</text>
+        </view>
+      </view>
+
+      <view wx:if="{{loading}}" class="state-card loading-card">
+        <text class="state-emoji">⌛</text>
+        <text class="state-title">搜索中...</text>
+        <text class="state-desc">正在为你匹配相关菜品与食堂</text>
+      </view>
+
+      <view wx:elif="{{!loading && totalCount === 0}}" class="state-card empty-card">
+        <text class="state-emoji">🍽️</text>
+        <text class="state-title">未找到相关结果</text>
+        <text class="state-desc">换个关键词试试，也许会有新的发现</text>
+      </view>
+
+      <scroll-view wx:else class="result-list" scroll-y="{{true}}" enable-back-to-top>
+        <view wx:if="{{dishes.length > 0}}" class="result-section">
+          <view class="section-head">
+            <text class="section-title">相关菜品</text>
+          </view>
+          <view class="dish-list">
+            <view 
+              wx:for="{{dishes}}" 
+              wx:key="dish_id" 
+              class="dish-card"
+              bindtap="onDishTap"
+              data-id="{{item.dish_id}}"
+            >
+              <image class="dish-image" src="{{item.cover_url}}" mode="aspectFill"></image>
+              <view class="dish-main">
+                <text class="dish-name">{{item.name}}</text>
+                <text class="dish-desc">{{item.description || '暂无描述'}} </text>
+                <view class="dish-meta">
+                  <text class="canteen-name">{{item.canteen_name}}</text>
+                  <text class="sales">已售{{item.sales_count || 0}}</text>
+                </view>
+                <view class="dish-bottom">
+                  <text class="price">¥{{item.price}}</text>
+                  <view class="add-btn" catchtap="onAddToCart" data-item="{{item}}">
+                    <text class="add-icon">+</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view wx:if="{{canteens.length > 0}}" class="result-section">
+          <view class="section-head">
+            <text class="section-title">相关食堂</text>
+          </view>
+          <view class="canteen-list">
+            <view 
+              wx:for="{{canteens}}" 
+              wx:key="canteen_id" 
+              class="canteen-card"
+              bindtap="onCanteenTap"
+              data-id="{{item.canteen_id}}"
+              data-name="{{item.canteen_name}}"
+            >
+              <image class="canteen-image" src="{{item.image || '/static/default-canteen.png'}}" mode="aspectFill"></image>
+              <view class="canteen-main">
+                <text class="canteen-card-name">{{item.canteen_name}}</text>
+                <text class="canteen-location">{{item.building}} {{item.floor}}</text>
+                <text class="canteen-desc">{{item.description || '暂无描述'}}</text>
+              </view>
+              <text class="arrow-icon">›</text>
+            </view>
+          </view>
+        </view>
+
+        <view wx:if="{{hasMore}}" class="more-btn" bindtap="onLoadMore">
+          <text>{{loadingMore ? '加载中...' : '加载更多'}}</text>
+        </view>
+        <view wx:elif="{{totalCount > 0}}" class="no-more">
+          <text>没有更多了</text>
+        </view>
+      </scroll-view>
+    </view>
+
+    <view wx:else class="search-suggest">
+      <view wx:if="{{keyword && suggestions.length > 0}}" class="panel-card">
+        <view class="section-head">
+          <text class="section-title">搜索建议</text>
+        </view>
+        <view class="suggest-list">
+          <view 
+            wx:for="{{suggestions}}" 
+            wx:key="text" 
+            class="suggest-item"
+            bindtap="onSuggestTap"
+            data-text="{{item.text}}"
+          >
+            <text class="suggest-icon">⌕</text>
+            <view class="suggest-main">
+              <text class="suggest-text">{{item.text}}</text>
+              <text class="suggest-count">约{{item.count}}个结果</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{hotKeywords.length > 0}}" class="panel-card">
+        <view class="section-head">
+          <text class="section-title">热门搜索</text>
+        </view>
+        <view class="tag-list">
+          <view 
+            wx:for="{{hotKeywords}}" 
+            wx:key="keyword" 
+            class="tag-chip"
+            bindtap="onHotTap"
+            data-keyword="{{item.keyword}}"
+          >
+            {{item.keyword}}
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{searchHistory.length > 0}}" class="panel-card">
+        <view class="section-head between">
+          <text class="section-title">搜索历史</text>
+          <text class="clear-history" bindtap="onClearHistory">清空</text>
+        </view>
+        <view class="history-list">
+          <view 
+            wx:for="{{searchHistory}}" 
+            wx:key="keyword" 
+            class="history-item"
+            bindtap="onHistoryTap"
+            data-keyword="{{item.keyword}}"
+          >
+            <text class="history-icon">⌕</text>
+            <text class="history-text">{{item.keyword}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

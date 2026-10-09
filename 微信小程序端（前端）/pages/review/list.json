@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "全部评价",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "admin-alert-overlay": "/components/admin-alert-overlay/admin-alert-overlay"
+  }
+}
+

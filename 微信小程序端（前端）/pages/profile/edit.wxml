@@ -1,0 +1,58 @@
+<!--pages/profile/edit.wxml-->
+<view class="profile-edit-page">
+  <view class="ambient ambient-1"></view>
+  <view class="ambient ambient-2"></view>
+
+  <scroll-view class="edit-scroll" scroll-y="{{true}}">
+    <view class="edit-shell">
+      <view class="hero-panel">
+        <view class="hero-main">
+          <view class="avatar-section">
+            <view class="avatar-wrapper" bindtap="onChooseAvatar">
+              <image class="avatar" src="{{avatar || '/static/default-avatar.png'}}" mode="aspectFill" />
+              <view class="avatar-overlay">
+                <text class="avatar-overlay-text">更换头像</text>
+              </view>
+            </view>
+          </view>
+          <view class="hero-copy">
+            <text class="hero-kicker">PROFILE STUDIO</text>
+            <text class="hero-title">编辑个人资料</text>
+            <text class="hero-subtitle">更新头像、昵称、联系方式和学号，让个人主页保持最新状态。</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel-card">
+        <view class="panel-head">
+          <text class="panel-title">基础信息</text>
+          <text class="panel-subtitle">这些内容会展示在你的账号资料中。</text>
+        </view>
+
+        <view class="field-list">
+          <view class="field-item">
+            <text class="field-label">昵称</text>
+            <input class="field-input" type="text" placeholder="请输入昵称" placeholder-class="field-placeholder" value="{{nickname}}" bindinput="onNicknameInput" />
+          </view>
+
+          <view class="field-item">
+            <text class="field-label">手机号</text>
+            <input class="field-input" type="number" placeholder="请输入手机号" placeholder-class="field-placeholder" value="{{phone}}" bindinput="onPhoneInput" maxlength="11" />
+          </view>
+
+          <view class="field-item">
+            <text class="field-label">邮箱</text>
+            <input class="field-input" type="text" placeholder="请输入邮箱" placeholder-class="field-placeholder" value="{{email}}" bindinput="onEmailInput" />
+          </view>
+
+          <view class="field-item">
+            <text class="field-label">学号</text>
+            <input class="field-input" type="text" placeholder="请输入学号" placeholder-class="field-placeholder" value="{{student_no}}" bindinput="onStudentNoInput" />
+          </view>
+        </view>
+      </view>
+
+      <button class="primary-btn" bindtap="onSave">保存资料</button>
+    </view>
+  </scroll-view>
+</view>

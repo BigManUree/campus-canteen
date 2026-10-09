@@ -1,0 +1,213 @@
+<!--pages/order/detail.wxml-->
+<view class="detail-page">
+  <view class="ambient ambient-1"></view>
+  <view class="ambient ambient-2"></view>
+
+<admin-alert-overlay
+  show="{{adminAlertOverlay.show}}"
+  alert="{{adminAlertOverlay.alert}}"
+  queueLength="{{adminAlertOverlay.queueLength}}"
+  bind:later="onAdminAlertLater"
+  bind:view="onAdminAlertView"
+/>
+
+  <scroll-view class="detail-scroll" scroll-y="{{true}}" enhanced>
+    <view class="detail-shell" wx:if="{{order}}">
+      <view class="hero-panel theme-{{order.status_meta.theme}}">
+        <view class="hero-head">
+          <view class="hero-copy">
+            <text class="hero-kicker">ORDER DETAIL</text>
+            <text class="hero-title">{{order.status_meta.title}}</text>
+            <text class="hero-desc">{{order.status_meta.desc}}</text>
+          </view>
+        <view class="hero-icon-wrap {{order.status_meta.action ? 'clickable' : ''}}" bindtap="onHeroIconTap">
+            <text class="hero-icon">{{order.status_meta.icon}}</text>
+          </view>
+        </view>
+
+        <view class="hero-meta-row">
+          <view class="status-chip">
+            <text class="status-chip-dot"></text>
+            <text>{{order.status_meta.badge}}</text>
+          </view>
+          <view class="pay-chip {{order.pay_status === 1 ? 'paid' : ''}}">
+            <text>{{order.pay_status_text}}</text>
+          </view>
+        </view>
+
+        <view class="pickup-card pickup-card-strong" wx:if="{{order.pickup_code && order.order_status === 2}}">
+          <view class="pickup-card-main">
+            <text class="pickup-spotlight-label">PICKUP CODE</text>
+            <text class="pickup-spotlight-code">{{order.pickup_code}}</text>
+            <text class="pickup-spotlight-tip">请到档口出示取餐码，快速完成核销</text>
+          </view>
+          <view class="pickup-copy pickup-copy-strong" bindtap="onCopyPickupCode">
+            <text>复制取餐码</text>
+          </view>
+        </view>
+
+        <view class="pickup-card" wx:elif="{{order.pickup_code}}">
+          <view>
+            <text class="pickup-label">取餐码</text>
+            <text class="pickup-code">{{order.pickup_code}}</text>
+          </view>
+          <view class="pickup-copy" bindtap="onCopyPickupCode">
+            <text>复制</text>
+          </view>
+        </view>
+
+        <view class="progress-card" wx:if="{{order.order_status < 5}}">
+          <view class="progress-top">
+            <text class="progress-title">订单进度</text>
+            <text class="progress-value">{{order.progress_percent}}%</text>
+          </view>
+          <view class="progress-track">
+            <view class="progress-fill" style="width: {{order.progress_percent}}%"></view>
+          </view>
+          <view class="progress-steps">
+            <view class="progress-step {{item.active ? 'active' : ''}} {{item.current ? 'current' : ''}}" wx:for="{{order.progress_steps}}" wx:key="key">
+              <view class="progress-dot">
+                <text wx:if="{{item.done}}">✓</text>
+              </view>
+              <text class="progress-label">{{item.label}}</text>
+            </view>
+          </view>
+      </view>
+    </view>
+
+      <view class="info-grid">
+        <view class="glass-card shop-card" wx:if="{{order.canteen}}">
+          <view class="card-title-row">
+            <text class="card-title">档口信息</text>
+            <view class="mini-action" wx:if="{{order.canteen.latitude && order.canteen.longitude}}" bindtap="onNavigate">
+              <text>导航</text>
+            </view>
+          </view>
+          <text class="shop-name">{{order.canteen_display_name}}</text>
+          <text class="shop-meta" wx:if="{{order.canteen_location_text}}">{{order.canteen_location_text}}</text>
+          <text class="shop-meta" wx:if="{{order.canteen.contact_phone}}">联系商家：{{order.canteen.contact_phone}}</text>
+        </view>
+
+        <view class="glass-card amount-card">
+          <view class="card-title-row">
+            <text class="card-title">金额概览</text>
+            <text class="amount-highlight">¥{{order.pay_amount_text}}</text>
+          </view>
+          <view class="amount-line">
+            <text>商品总额</text>
+            <text>¥{{order.total_amount_text}}</text>
+          </view>
+          <view class="amount-line" wx:if="{{order.discount_amount > 0}}">
+            <text>优惠减免</text>
+            <text class="discount-text">-¥{{order.discount_amount_text}}</text>
+          </view>
+          <view class="amount-divider"></view>
+          <view class="amount-line total">
+            <text>实付金额</text>
+            <text>¥{{order.pay_amount_text}}</text>
+          </view>
+      </view>
+    </view>
+
+      <view class="glass-card items-card">
+        <view class="card-title-row">
+          <text class="card-title">餐品清单</text>
+          <text class="card-subtitle">共 {{order.items.length}} 件</text>
+        </view>
+        <view class="item-row with-image" wx:for="{{order.items}}" wx:key="item_id">
+          <image class="item-image" src="{{item.image}}" mode="aspectFill" lazy-load="{{true}}" />
+          <view class="item-main">
+            <text class="item-name">{{item.dish_name}}</text>
+            <text class="item-spec">¥{{item.price}} × {{item.quantity}}</text>
+            <text class="item-remark" wx:if="{{item.remark}}">备注：{{item.remark}}</text>
+          </view>
+          <text class="item-total">¥{{item.total_text}}</text>
+        </view>
+      </view>
+
+      <view class="glass-card timeline-card" wx:if="{{timeline.length > 0}}">
+        <view class="card-title-row">
+          <text class="card-title">订单轨迹</text>
+          <text class="card-subtitle" wx:if="{{timelineLoading}}">同步中...</text>
+    </view>
+      <view class="timeline-list">
+          <view class="timeline-item {{item.is_current ? 'current' : ''}}" wx:for="{{timeline}}" wx:key="index">
+            <view class="timeline-axis">
+              <view class="timeline-node {{item.is_current ? 'active' : ''}}"></view>
+              <view class="timeline-stick" wx:if="{{index < timeline.length - 1}}"></view>
+            </view>
+            <view class="timeline-body">
+              <view class="timeline-row">
+                <text class="timeline-status">{{item.status_name}}</text>
+                <text class="timeline-time" wx:if="{{item.time_text}}">{{item.time_text}}</text>
+              </view>
+              <text class="timeline-desc" wx:if="{{item.description}}">{{item.description}}</text>
+              <text class="timeline-operator" wx:if="{{item.operator_name}}">操作人：{{item.operator_name}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+      <view class="glass-card cancel-card" wx:if="{{order.order_status === 5 && order.cancel_reason_text}}">
+        <view class="card-title-row">
+          <text class="card-title">取消原因</text>
+          <text class="card-subtitle">订单已关闭</text>
+      </view>
+        <text class="cancel-reason-text">{{order.cancel_reason_text}}</text>
+      </view>
+
+      <view class="glass-card detail-card">
+        <view class="card-title-row">
+          <text class="card-title">订单信息</text>
+          <text class="card-subtitle">#{{order.order_no}}</text>
+      </view>
+        <view class="detail-row">
+          <text class="detail-label">订单号</text>
+          <text class="detail-value detail-mono">{{order.order_no}}</text>
+      </view>
+        <view class="detail-row">
+          <text class="detail-label">下单时间</text>
+          <text class="detail-value">{{order.create_time_full_text}}</text>
+      </view>
+        <view class="detail-row" wx:if="{{order.pickup_time_text}}">
+          <text class="detail-label">预约时间</text>
+          <text class="detail-value">{{order.pickup_time_text}}</text>
+    </view>
+        <view class="detail-row" wx:if="{{order.delivery_address}}">
+          <text class="detail-label">配送地址</text>
+          <text class="detail-value multiline">{{order.delivery_address}}</text>
+      </view>
+        <view class="detail-row" wx:if="{{order.remark}}">
+          <text class="detail-label">订单备注</text>
+          <text class="detail-value multiline">{{order.remark}}</text>
+      </view>
+      </view>
+    </view>
+
+    <view class="loading-shell" wx:if="{{loading}}">
+      <view class="loading-card">
+        <view class="loading-orb"></view>
+        <text class="loading-title">订单详情加载中</text>
+        <text class="loading-desc">正在同步最新的订单状态与时间线</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="action-bar" wx:if="{{order}}">
+    <view class="action-stack single" wx:if="{{order.pay_status === 0 && order.order_status !== 5}}">
+      <button class="action-btn secondary" bindtap="onCancelOrder">取消订单</button>
+      <button class="action-btn primary" bindtap="onPayOrder" disabled="{{paying}}" loading="{{paying}}">{{paying ? '支付中...' : '立即支付 ¥' + order.pay_amount_text}}</button>
+    </view>
+
+    <view class="action-stack" wx:elif="{{order.pay_status === 1 && order.order_status >= 0 && order.order_status < 4}}">
+      <button class="action-btn secondary" bindtap="onRefund">申请退款</button>
+      <button class="action-btn primary" bindtap="onRemind">催单提醒</button>
+    </view>
+
+    <view class="action-stack wrap" wx:elif="{{order.order_status === 4}}">
+      <button class="action-btn secondary" bindtap="onReorder">再来一单</button>
+      <button class="action-btn secondary" wx:if="{{!order.is_reviewed}}" bindtap="onReview">去评价</button>
+      <button class="action-btn secondary disabled" wx:if="{{order.is_reviewed}}" disabled="{{true}}">已评价</button>
+      </view>
+  </view>
+</view>

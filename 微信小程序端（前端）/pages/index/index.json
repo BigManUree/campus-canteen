@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "state-view": "/components/state-view/state-view",
+    "admin-alert-overlay": "/components/admin-alert-overlay/admin-alert-overlay"
+  },
+  "navigationBarTitleText": "校园食堂",
+  "enablePullDownRefresh": true
+}

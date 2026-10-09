@@ -1,0 +1,145 @@
+<!--pages/history/history.wxml-->
+<view class="history-page">
+  <view class="ambient ambient-1"></view>
+  <view class="ambient ambient-2"></view>
+
+<admin-alert-overlay
+  show="{{adminAlertOverlay.show}}"
+  alert="{{adminAlertOverlay.alert}}"
+  queueLength="{{adminAlertOverlay.queueLength}}"
+  bind:later="onAdminAlertLater"
+  bind:view="onAdminAlertView"
+/>
+
+  <scroll-view 
+    class="history-scroll" 
+    scroll-y="{{true}}"
+    bindscrolltolower="loadMore"
+    lower-threshold="{{100}}"
+    enhanced
+  >
+    <view class="history-shell">
+      <view class="hero-panel">
+        <view class="hero-head">
+          <view class="hero-copy">
+            <text class="hero-kicker">RECENT TRACK</text>
+            <text class="hero-title">浏览历史</text>
+            <text class="hero-subtitle">把最近看过的菜品整理成时间线，回看、对比、再次下单都会更快。</text>
+          </view>
+
+          <view class="hero-action" wx:if="{{histories.length > 0}}" bindtap="onClearHistory">
+            <text class="hero-action-icon">⌫</text>
+            <text class="hero-action-text">清空</text>
+          </view>
+        </view>
+
+        <view class="hero-stats">
+          <view class="hero-stat warm-card">
+            <text class="hero-stat-value">{{total}}</text>
+            <text class="hero-stat-label">全部记录</text>
+          </view>
+          <view class="hero-stat cool-card">
+            <text class="hero-stat-value">{{histories.length}}</text>
+            <text class="hero-stat-label">当前展示</text>
+          </view>
+          <view class="hero-stat mint-card">
+            <text class="hero-stat-value">{{hasMore ? '···' : 'OK'}}</text>
+            <text class="hero-stat-label">加载状态</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="section-bar" wx:if="{{!loading && histories.length > 0}}">
+        <view>
+          <text class="section-title">最近浏览</text>
+          <text class="section-desc">点击卡片查看详情，右侧按钮可删除单条记录</text>
+        </view>
+        <view class="section-pill">
+          <text>{{histories.length}} 条</text>
+        </view>
+      </view>
+
+    <!-- 骨架屏 -->
+    <view class="history-list" wx:if="{{loading}}">
+      <view class="history-card skeleton" wx:for="{{[1,2,3,4]}}" wx:key="*this">
+        <view class="card-image skeleton-img"></view>
+        <view class="card-body">
+          <view class="skeleton-line w80"></view>
+          <view class="skeleton-line w60"></view>
+          <view class="skeleton-line w40"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 历史卡片 -->
+    <view class="history-list" wx:if="{{!loading && histories.length > 0}}">
+      <view 
+        class="history-card" 
+        wx:for="{{histories}}" 
+        wx:key="browse_id"
+      >
+          <view class="card-content" bindtap="onDishTap" data-id="{{item.dish_id}}">
+            <view class="card-image-wrap">
+              <image class="card-image" src="{{item.cover_url}}" mode="aspectFill" lazy-load />
+              <view class="image-overlay"></view>
+              <view class="time-chip">
+                <text>{{item.browse_time_text}}</text>
+              </view>
+            </view>
+
+            <view class="card-body">
+              <view class="card-top">
+                <text class="dish-name">{{item.dish_name}}</text>
+        <view 
+          class="delete-btn" 
+          catchtap="onRemoveHistory" 
+          data-dish-id="{{item.dish_id}}"
+        >
+          <text class="delete-icon">✕</text>
+        </view>
+              </view>
+            
+            <view class="card-footer">
+              <view class="price-box">
+                <text class="price-symbol">¥</text>
+                <text class="price-value">{{item.dish_price}}</text>
+              </view>
+                <view class="detail-pill">
+                  <text>再次查看</text>
+                </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 加载更多 -->
+    <view class="load-more" wx:if="{{!loading && histories.length > 0}}">
+      <view class="loading-spinner" wx:if="{{loadingMore}}"></view>
+        <text class="load-text" wx:if="{{loadingMore}}">正在续上更多浏览记录...</text>
+        <text class="load-text" wx:elif="{{hasMore}}">上滑加载更多历史</text>
+        <text class="load-text end" wx:else>已经到底啦，最近记录都在这里</text>
+    </view>
+
+    <!-- 空状态 -->
+      <view class="state-panel" wx:if="{{!loading && !error && histories.length === 0}}">
+        <view class="state-icon warm">◎</view>
+        <text class="state-title">还没有浏览记录</text>
+        <text class="state-desc">去首页逛逛吧，看过的菜品会自动记录在这里，方便你随时回看。</text>
+        <navigator url="/pages/index/index" open-type="switchTab" class="state-btn">
+        <text>去逛逛</text>
+      </navigator>
+    </view>
+
+    <!-- 错误状态 -->
+      <view class="state-panel" wx:if="{{!loading && error}}">
+        <view class="state-icon cool">!</view>
+        <text class="state-title">浏览历史加载失败</text>
+        <text class="state-desc">可能是网络有些波动，重新加载一次试试看。</text>
+        <view class="state-btn" bindtap="onRetry">
+          <text>重新加载</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

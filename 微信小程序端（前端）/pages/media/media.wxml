@@ -1,0 +1,58 @@
+<view class="media-page">
+  <view class="media-shell">
+    <view class="media-header">
+      <view class="media-badge">{{mediaTypeLabel}}</view>
+      <text class="media-title">{{pageTitle}}</text>
+      <text class="media-desc">{{mediaHint}}</text>
+    </view>
+
+    <view class="media-card" wx:if="{{mediaUrl}}">
+      <video
+        wx:if="{{mediaType === 'video'}}"
+        id="dishMediaVideo"
+        class="media-player"
+        src="{{mediaUrl}}"
+        poster="{{posterUrl}}"
+        controls
+        autoplay
+        show-center-play-btn
+        enable-play-gesture
+        show-fullscreen-btn
+        show-play-btn
+        object-fit="contain"
+        initial-time="0"
+        bindloadedmetadata="onVideoLoaded"
+        bindplay="onVideoPlay"
+        bindpause="onVideoPause"
+        bindfullscreenchange="onFullscreenChange"
+        binderror="onVideoError"
+      ></video>
+
+      <view wx:elif="{{mediaType === 'audio'}}" class="audio-panel">
+        <view class="audio-icon">🎧</view>
+        <text class="audio-title">正在播放音频介绍</text>
+        <text class="audio-url">{{mediaUrl}}</text>
+        <button class="audio-btn" bindtap="onToggleAudio">{{audioPlaying ? '暂停音频' : '播放音频'}}</button>
+      </view>
+    </view>
+
+    <view class="state-card" wx:else>
+      <text class="state-title">未获取到媒体地址</text>
+      <text class="state-desc">请返回菜品详情页后重试</text>
+    </view>
+
+    <view class="tips-card">
+      <text class="tips-title">播放说明</text>
+      <text class="tips-item">1. 媒体地址会自动补全为完整服务器地址</text>
+      <text class="tips-item">2. 视频支持直接播放并包含音频轨道</text>
+      <text class="tips-item">3. 若无法播放，请确认资源能在浏览器中直接访问</text>
+    </view>
+
+    <view class="debug-card" wx:if="{{mediaUrl}}">
+      <text class="debug-title">当前媒体地址</text>
+      <text class="debug-url">{{mediaUrl}}</text>
+      <text class="debug-tip">如仍无法播放，请优先检查 MP4 编码是否为 H.264 + AAC</text>
+    </view>
+  </view>
+</view>
+

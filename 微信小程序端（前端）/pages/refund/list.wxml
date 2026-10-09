@@ -1,0 +1,111 @@
+<!--pages/refund/list.wxml-->
+<view class="refund-list-page">
+  <view class="ambient ambient-1"></view>
+  <view class="ambient ambient-2"></view>
+
+  <admin-alert-overlay
+    show="{{adminAlertOverlay.show}}"
+    alert="{{adminAlertOverlay.alert}}"
+    queueLength="{{adminAlertOverlay.queueLength}}"
+    bind:later="onAdminAlertLater"
+    bind:view="onAdminAlertView"
+  />
+
+  <view class="refund-shell">
+    <view class="hero-panel">
+      <view class="hero-copy">
+        <text class="hero-kicker">REFUND CENTER</text>
+        <text class="hero-title">退款记录</text>
+        <text class="hero-subtitle">查看退款申请进度、审核状态和关联订单信息。</text>
+      </view>
+    </view>
+
+    <view class="filter-bar">
+      <scroll-view class="filter-scroll" scroll-x="{{true}}" show-scrollbar="{{false}}">
+        <view class="filter-list">
+          <view 
+            class="filter-item {{currentStatus === item.value ? 'active' : ''}}"
+            wx:for="{{statusOptions}}"
+            wx:key="value"
+            bindtap="onStatusChange"
+            data-status="{{item.value}}"
+          >
+            <text class="filter-text">{{item.label}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <scroll-view 
+      class="refund-container"
+      scroll-y="{{true}}"
+      refresher-enabled="{{true}}"
+      refresher-triggered="{{refreshing}}"
+      bindrefresherrefresh="onPullDownRefresh"
+    >
+      <view class="state-card" wx:if="{{loading && refunds.length === 0}}">
+        <view class="loading-spinner"></view>
+        <text class="state-title">加载中...</text>
+        <text class="state-desc">正在整理你的退款记录</text>
+      </view>
+
+      <view class="refund-list" wx:if="{{!loading || refunds.length > 0}}">
+        <view 
+          class="refund-card"
+          wx:for="{{refunds}}"
+          wx:key="refund_id"
+          bindtap="onRefundDetail"
+          data-id="{{item.refund_id}}"
+        >
+          <view class="card-header">
+            <view class="header-left">
+              <text class="refund-id">退款单号：{{item.refund_id}}</text>
+              <text class="create-time">{{item.create_time_text}}</text>
+            </view>
+            <view class="refund-status" style="background: {{item.status_bg}}; color: {{item.status_color}}">
+              <text>{{item.status_text}}</text>
+            </view>
+          </view>
+
+          <view class="order-info" catchtap="onOrderDetail" data-order-id="{{item.order_id}}">
+            <text class="order-label">关联订单</text>
+            <text class="order-no">{{item.order && item.order.order_no ? item.order.order_no : item.order_id}}</text>
+            <text class="arrow">›</text>
+          </view>
+
+          <view class="refund-info">
+            <view class="info-row">
+              <text class="label">退款原因</text>
+              <text class="value">{{item.reason_category_text}}</text>
+            </view>
+            <view class="info-row">
+              <text class="label">退款金额</text>
+              <text class="value amount">¥{{item.refund_amount_text}}</text>
+            </view>
+            <view class="info-row" wx:if="{{item.refund_type === 'partial'}}">
+              <text class="label">退款类型</text>
+              <text class="value">部分退款</text>
+            </view>
+          </view>
+
+          <view class="review-info" wx:if="{{item.status === 'approved' || item.status === 'rejected'}}">
+            <view class="review-row" wx:if="{{item.admin_remark}}">
+              <text class="review-label">审核备注</text>
+              <text class="review-text">{{item.admin_remark}}</text>
+            </view>
+            <view class="review-row" wx:if="{{item.approve_time}}">
+              <text class="review-label">审核时间</text>
+              <text class="review-text">{{item.approve_time}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="state-card empty-card" wx:if="{{!loading && refunds.length === 0}}">
+        <text class="state-emoji">💰</text>
+        <text class="state-title">暂无退款记录</text>
+        <text class="state-desc">你还没有提交过退款申请</text>
+      </view>
+    </scroll-view>
+  </view>
+</view>

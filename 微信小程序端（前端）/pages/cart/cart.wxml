@@ -1,0 +1,248 @@
+<!--pages/cart/cart.wxml-->
+<view class="cart-page">
+  <view class="ambient ambient-1"></view>
+  <view class="ambient ambient-2"></view>
+
+  <scroll-view 
+    class="cart-container"
+    scroll-y="{{true}}"
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{refreshing}}"
+    bindrefresherrefresh="onRefresh"
+    enhanced
+  >
+    <view class="content-wrap">
+      <view class="hero-shell">
+        <view class="hero-panel">
+          <view class="hero-top">
+            <view class="hero-copy">
+              <text class="hero-kicker">CURATED CART</text>
+              <text class="hero-title">购物车</text>
+              <text class="hero-subtitle">把今天想吃的都先收进来，统一核对后再去结算。</text>
+            </view>
+            <view class="hero-tools">
+              <view class="manage-chip" bindtap="onToggleManage">
+                <text>{{isManage ? '完成' : '管理'}}</text>
+              </view>
+            </view>
+          </view>
+
+          <admin-alert-overlay
+            show="{{adminAlertOverlay.show}}"
+            alert="{{adminAlertOverlay.alert}}"
+            queueLength="{{adminAlertOverlay.queueLength}}"
+            bind:later="onAdminAlertLater"
+            bind:view="onAdminAlertView"
+          />
+
+          <view class="hero-stats">
+            <view class="hero-stat-card warm-card">
+              <text class="hero-stat-value">{{validItems.length}}</text>
+              <text class="hero-stat-label">可结算商品</text>
+            </view>
+            <view class="hero-stat-card cool-card">
+              <text class="hero-stat-value">{{selectedCount}}</text>
+              <text class="hero-stat-label">已选商品</text>
+            </view>
+            <view class="hero-stat-card mint-card">
+              <text class="hero-stat-value">¥{{totalPrice}}</text>
+              <text class="hero-stat-label">当前合计</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="skeleton-wrapper" wx:if="{{loading && cartItems.length === 0}}">
+        <view class="skeleton-card" wx:for="{{[1,2,3]}}" wx:key="*this">
+          <view class="skeleton-check"></view>
+          <view class="skeleton-image"></view>
+          <view class="skeleton-copy">
+            <view class="skeleton-line w-70"></view>
+            <view class="skeleton-line w-44"></view>
+            <view class="skeleton-line w-52"></view>
+          </view>
+        </view>
+      </view>
+
+      <view class="empty-shell" wx:if="{{!loading && cartItems.length === 0}}">
+        <view class="empty-orb"></view>
+        <text class="empty-icon">🛒</text>
+        <text class="empty-title">购物车还是空的</text>
+        <text class="empty-desc">去挑几份热乎的餐品吧，选中的商品会在这里集中结算。</text>
+        <view class="empty-action" bindtap="onGoHome">
+          <text>去首页逛逛</text>
+        </view>
+      </view>
+
+      <view class="cart-stack" wx:if="{{!loading && cartItems.length > 0}}">
+        <view class="section-card" wx:if="{{validItems.length > 0}}">
+          <view class="section-head">
+            <view>
+              <text class="section-title">本次待结算</text>
+              <text class="section-subtitle">已加入 {{validItems.length}} 件可用商品</text>
+            </view>
+            <view class="section-badge">
+              <text>{{isManage ? '管理模式' : '可直接结算'}}</text>
+            </view>
+          </view>
+
+          <view 
+            class="cart-item {{item.selected ? 'selected' : ''}}"
+            wx:for="{{validItems}}"
+            wx:key="item_id"
+          >
+            <view class="item-checkbox" catchtap="onSelectItem" data-id="{{item.item_id}}">
+              <view class="checkbox {{item.selected ? 'checked' : ''}}">
+                <text class="checkbox-icon" wx:if="{{item.selected}}">✓</text>
+              </view>
+            </view>
+
+            <view class="item-main" bindtap="onItemDetail" data-id="{{item.dish_id}}">
+              <image class="item-image" src="{{item.cover_url}}" mode="aspectFill" lazy-load />
+              <view class="item-copy">
+                <view class="item-topline">
+                  <text class="item-name">{{item.dish_name}}</text>
+                  <view class="item-tags" wx:if="{{item.tags && item.tags.length > 0}}">
+                    <text class="item-tag" wx:for="{{item.tags}}" wx:key="*this" wx:for-item="tag">{{tag}}</text>
+                  </view>
+                </view>
+
+                <text class="item-desc" wx:if="{{item.dish_desc}}">{{item.dish_desc}}</text>
+
+                <view class="item-meta-row">
+                  <view class="price-box">
+                    <text class="price-now">¥{{item.dish_price_text}}</text>
+                    <text class="price-old" wx:if="{{item.original_price > item.dish_price}}">¥{{item.original_price_text}}</text>
+                  </view>
+
+                  <view class="quantity-control">
+                    <view 
+                      class="quantity-btn minus {{item.quantity <= 1 ? 'disabled' : ''}}" 
+                      catchtap="onDecreaseQuantity" 
+                      data-id="{{item.item_id}}"
+                    >
+                      <text class="btn-icon">−</text>
+                    </view>
+                    <input 
+                      class="quantity-input" 
+                      type="digit" 
+                      value="{{item.quantity}}"
+                      catchtap="onQuantityInput"
+                      data-id="{{item.item_id}}"
+                    />
+                    <view 
+                      class="quantity-btn plus" 
+                      catchtap="onIncreaseQuantity" 
+                      data-id="{{item.item_id}}"
+                    >
+                      <text class="btn-icon">+</text>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+
+            <view class="item-delete" wx:if="{{isManage}}" catchtap="onDeleteItem" data-id="{{item.item_id}}">
+              <text class="delete-icon">✕</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="section-card invalid-card" wx:if="{{invalidItems.length > 0}}">
+          <view class="section-head">
+            <view>
+              <text class="section-title">已失效商品</text>
+              <text class="section-subtitle">这些商品暂时无法参与结算</text>
+            </view>
+            <view class="ghost-action" catchtap="onClearInvalid">
+              <text>清空</text>
+            </view>
+          </view>
+
+          <view class="cart-item invalid" wx:for="{{invalidItems}}" wx:key="item_id">
+            <view class="item-main">
+              <image class="item-image invalid-image" src="{{item.cover_url}}" mode="aspectFill" lazy-load />
+              <view class="item-copy">
+                <view class="item-topline">
+                  <text class="item-name">{{item.dish_name}}</text>
+                  <view class="invalid-badge"><text>已失效</text></view>
+                </view>
+                <view class="item-meta-row compact">
+                  <text class="price-now">¥{{item.dish_price_text}}</text>
+                </view>
+              </view>
+            </view>
+            <view class="item-delete item-delete-soft" catchtap="onDeleteItem" data-id="{{item.item_id}}">
+              <text class="delete-icon">✕</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="section-card recommend-card" wx:if="{{recommendItems.length > 0 && validItems.length > 0}}">
+          <view class="section-head">
+            <view>
+              <text class="section-title">顺手加点什么</text>
+              <text class="section-subtitle">这些餐品和你购物车里的内容很搭</text>
+            </view>
+          </view>
+
+          <scroll-view class="recommend-scroll" scroll-x="{{true}}" show-scrollbar="{{false}}" enhanced>
+            <view class="recommend-list">
+              <view 
+                class="recommend-item"
+                wx:for="{{recommendItems}}"
+                wx:key="dish_id"
+                bindtap="onRecommendDetail"
+                data-id="{{item.dish_id}}"
+              >
+                <image class="recommend-image" src="{{item.image}}" mode="aspectFill" lazy-load />
+                <view class="recommend-info">
+                  <text class="recommend-name">{{item.name}}</text>
+                  <view class="recommend-footer">
+                    <text class="recommend-price">¥{{item.price_text}}</text>
+                    <view class="recommend-add" catchtap="onAddRecommend" data-id="{{item.dish_id}}">
+                      <text>+</text>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="checkout-bar" wx:if="{{validItems.length > 0}}">
+    <view class="checkout-shell">
+      <view class="checkout-left">
+        <view class="select-all" catchtap="onSelectAll">
+          <view class="checkbox {{selectedAll ? 'checked' : ''}}">
+            <text class="checkbox-icon" wx:if="{{selectedAll}}">✓</text>
+          </view>
+          <text class="select-text">全选</text>
+        </view>
+
+        <view class="checkout-price">
+          <view class="checkout-total-row">
+            <text class="checkout-total-label">合计</text>
+            <text class="checkout-total-price">¥{{totalPrice}}</text>
+          </view>
+          <view class="selected-pill">
+            <text class="selected-pill-label">已选</text>
+            <text class="selected-pill-value">{{selectedCount}} 件</text>
+          </view>
+          <text class="checkout-discount" wx:if="{{discountAmount > 0}}">已优惠 ¥{{discountAmount}}</text>
+        </view>
+      </view>
+
+      <view class="checkout-right">
+        <view class="checkout-btn delete-mode" wx:if="{{isManage}}" catchtap="onBatchDelete">
+          <text>删除 {{selectedCount}}</text>
+        </view>
+        <view class="checkout-btn" wx:else catchtap="onCheckout">
+          <text>去结算 {{selectedCount}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

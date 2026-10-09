@@ -1,0 +1,176 @@
+<!--pages/review/review.wxml-->
+<view class="review-page">
+  <view class="ambient ambient-1"></view>
+  <view class="ambient ambient-2"></view>
+
+  <admin-alert-overlay
+    show="{{adminAlertOverlay.show}}"
+    alert="{{adminAlertOverlay.alert}}"
+    queueLength="{{adminAlertOverlay.queueLength}}"
+    bind:later="onAdminAlertLater"
+    bind:view="onAdminAlertView"
+  />
+
+  <scroll-view class="review-scroll" scroll-y="{{true}}" enhanced>
+    <view class="review-shell">
+      <view class="hero-panel" wx:if="{{dish}}">
+        <view class="hero-top">
+          <view class="hero-copy">
+            <text class="hero-kicker">TASTE NOTE</text>
+            <text class="hero-title">写下这份餐品的真实感受</text>
+            <text class="hero-subtitle">你的评价会帮助后面的同学更快选到合适的餐品。</text>
+          </view>
+        </view>
+
+        <view class="batch-progress" wx:if="{{showBatch && orderItems.length > 1}}">
+          <view class="batch-progress-head">
+            <text class="batch-progress-title">批量评价进度</text>
+            <text class="batch-progress-value">{{currentIndex + 1}} / {{orderItems.length}}</text>
+          </view>
+          <view class="batch-progress-track">
+            <view class="batch-progress-fill" style="width: {{((currentIndex + 1) / orderItems.length) * 100}}%"></view>
+          </view>
+          <view class="batch-dots">
+            <view class="batch-dot {{index <= currentIndex ? 'active' : ''}}" wx:for="{{orderItems}}" wx:key="dish_id"></view>
+          </view>
+        </view>
+
+        <view class="dish-card">
+          <image class="dish-image" src="{{dish.image || '/static/default-dish.png'}}" mode="aspectFill" />
+          <view class="dish-info">
+            <text class="dish-name">{{dish.dish_name || dish.name}}</text>
+            <view class="dish-meta-row">
+              <text class="dish-price" wx:if="{{dish.price}}">¥{{dish.price}}</text>
+              <text class="dish-quantity" wx:if="{{dish.quantity}}">×{{dish.quantity}}</text>
+            </view>
+            <text class="dish-desc" wx:if="{{dish.description}}">{{dish.description}}</text>
+            <view class="dish-tags" wx:if="{{dish.category_name || dish.canteen_name}}">
+              <text class="dish-tag" wx:if="{{dish.category_name}}">{{dish.category_name}}</text>
+              <text class="dish-tag" wx:if="{{dish.canteen_name}}">{{dish.canteen_name}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="panel-card rating-card">
+        <view class="panel-head">
+          <text class="panel-title">满意度评分</text>
+          <text class="panel-subtitle">点亮星星，给这次用餐一个总体印象</text>
+        </view>
+
+        <view class="rating-stars">
+          <view 
+            class="star-shell {{index < rating ? 'active' : ''}}"
+            wx:for="{{[1,2,3,4,5]}}"
+            wx:key="*this"
+            bindtap="onRatingTap"
+            data-rating="{{index + 1}}"
+          >
+            <text class="star">★</text>
+          </view>
+        </view>
+
+        <text class="rating-copy {{rating > 0 ? 'active' : ''}}">{{getRatingCopy(rating)}}</text>
+      </view>
+
+      <view class="panel-card content-card">
+        <view class="panel-head">
+          <text class="panel-title">评价内容</text>
+          <text class="panel-subtitle">可以写口味、分量、包装或出餐速度</text>
+        </view>
+
+        <view class="identity-toggle">
+          <text class="identity-label">展示方式</text>
+          <view class="identity-options">
+            <view
+              class="identity-chip {{isAnonymous ? 'active' : ''}}"
+              bindtap="onAnonymousChange"
+              data-anonymous="true"
+            >
+              <text>匿名评价</text>
+            </view>
+            <view
+              class="identity-chip {{!isAnonymous ? 'active' : ''}}"
+              bindtap="onAnonymousChange"
+              data-anonymous="false"
+            >
+              <text>实名评价</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="textarea-shell">
+          <textarea 
+            class="content-input" 
+            placeholder="比如：口味很稳，米饭分量足，打包也很整齐..."
+            value="{{content}}"
+            bindinput="onContentInput"
+            maxlength="500"
+            show-confirm-bar="{{false}}"
+          />
+          <text class="char-count">{{content.length}} / 500</text>
+        </view>
+      </view>
+
+      <view class="panel-card images-card">
+        <view class="panel-head">
+          <text class="panel-title">晒图加分</text>
+          <text class="panel-subtitle">最多上传 3 张图片，真实展示餐品状态</text>
+        </view>
+
+        <view class="upload-counter">
+          <text class="upload-counter-label">图片进度</text>
+          <view class="upload-counter-badge">
+            <text>{{images.length}} / 3</text>
+          </view>
+        </view>
+
+        <view class="images-grid">
+          <view class="image-item" wx:for="{{images}}" wx:key="index">
+            <image class="preview-image" src="{{item}}" mode="aspectFill" />
+            <view class="delete-image" bindtap="onDeleteImage" data-index="{{index}}">
+              <text>×</text>
+            </view>
+          </view>
+
+          <view class="add-image" wx:if="{{images.length < 3}}" bindtap="onChooseImage">
+            <text class="add-icon">＋</text>
+            <text class="add-text">添加图片</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="submit-bar">
+    <view class="submit-shell">
+      <view class="submit-meta">
+        <text class="submit-meta-title">{{rating > 0 ? ('当前评分 ' + rating + ' 星') : '还没有评分'}}</text>
+        <text class="submit-meta-desc">{{(isAnonymous ? '当前将以匿名方式展示' : '当前将以实名方式展示') + ' · ' + (showBatch && currentIndex < orderItems.length - 1 ? '提交后将自动进入下一道菜品评价' : '提交后会返回上一页')}}</text>
+      </view>
+
+      <view class="submit-actions">
+        <view 
+          class="action-btn secondary"
+          wx:if="{{showBatch && currentIndex < orderItems.length - 1}}"
+          bindtap="onSkip"
+        >
+          <text>跳过</text>
+        </view>
+        <view class="action-btn primary" bindtap="onSubmit">
+          <text>{{showBatch && currentIndex < orderItems.length - 1 ? '下一个' : '提交评价'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="success-overlay {{successOverlay.show ? 'show' : ''}}" wx:if="{{successOverlay.show}}">
+    <view class="success-card">
+      <view class="success-icon-wrap">
+        <text class="success-icon">✓</text>
+      </view>
+      <text class="success-title">{{successOverlay.title}}</text>
+      <text class="success-desc">{{successOverlay.desc}}</text>
+    </view>
+  </view>
+</view>

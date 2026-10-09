@@ -1,0 +1,197 @@
+/**app.wxss**/
+/* 全局样式 */
+page {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* 通用容器 */
+.container {
+  min-height: 100vh;
+  padding-bottom: 20rpx;
+}
+
+/* 通用按钮 */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 88rpx;
+  border-radius: 44rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+}
+
+.btn-secondary {
+  background-color: #fff;
+  color: #667eea;
+  border: 2rpx solid #667eea;
+}
+
+.btn-secondary:hover {
+  background-color: #f0f0ff;
+}
+
+.btn-disabled {
+  background-color: #e0e0e0;
+  color: #999;
+  box-shadow: none;
+}
+
+/* 通用卡片 */
+.card {
+  background-color: #fff;
+  border-radius: 20rpx;
+  margin: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10rpx);
+}
+
+.card:hover {
+  box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.12);
+  transform: translateY(-4rpx);
+}
+
+/* 通用间距 */
+.mt-10 { margin-top: 10rpx; }
+.mt-20 { margin-top: 20rpx; }
+.mt-30 { margin-top: 30rpx; }
+.mb-10 { margin-bottom: 10rpx; }
+.mb-20 { margin-bottom: 20rpx; }
+.mb-30 { margin-bottom: 30rpx; }
+.ml-20 { margin-left: 20rpx; }
+.mr-20 { margin-right: 20rpx; }
+.p-20 { padding: 20rpx; }
+.p-30 { padding: 30rpx; }
+
+/* 文本样式 */
+.text-primary { color: #667eea; }
+.text-secondary { color: #999; }
+.text-danger { color: #ff4757; }
+.text-success { color: #2ed573; }
+.text-center { text-align: center; }
+.text-bold { font-weight: bold; }
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Flex 布局 */
+.flex {
+  display: flex;
+}
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.flex-1 {
+  flex: 1;
+}
+
+/* 加载状态 */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+  color: #999;
+  font-size: 28rpx;
+}
+
+/* 空状态 */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100rpx 40rpx;
+  color: #999;
+  font-size: 28rpx;
+}
+
+.empty-icon {
+  width: 200rpx;
+  height: 200rpx;
+  margin-bottom: 30rpx;
+  opacity: 0.5;
+}
+
+/* 分割线 */
+.divider {
+  height: 1rpx;
+  background-color: #e5e5e5;
+  margin: 20rpx 0;
+}
+
+/* 价格样式 */
+.price {
+  color: #ff4757;
+  font-weight: bold;
+}
+.price-symbol {
+  font-size: 24rpx;
+}
+.price-integer {
+  font-size: 36rpx;
+}
+.price-decimal {
+  font-size: 28rpx;
+}
+
+/* 标签 */
+.tag {
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  border-radius: 4rpx;
+  font-size: 22rpx;
+  background-color: #f0f0f0;
+  color: #666;
+}
+
+.tag-primary {
+  background-color: #667eea;
+  color: #fff;
+}
+
+.tag-danger {
+  background-color: #ff4757;
+  color: #fff;
+}
+
+.tag-success {
+  background-color: #2ed573;
+  color: #fff;
+}

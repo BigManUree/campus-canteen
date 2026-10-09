@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "浏览历史",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "state-view": "/components/state-view/state-view",
+    "admin-alert-overlay": "/components/admin-alert-overlay/admin-alert-overlay"
+  }
+}

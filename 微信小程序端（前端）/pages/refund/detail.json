@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "退款详情",
+  "usingComponents": {
+    "admin-alert-overlay": "/components/admin-alert-overlay/admin-alert-overlay"
+  }
+}
+

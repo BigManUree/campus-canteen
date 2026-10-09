@@ -1,0 +1,337 @@
+<!--pages/dish/detail.wxml-->
+<view class="page-container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-navbar">
+    <view class="navbar-left" bindtap="onBack">
+      <text class="back-icon">←</text>
+    </view>
+
+<admin-alert-overlay
+  show="{{adminAlertOverlay.show}}"
+  alert="{{adminAlertOverlay.alert}}"
+  queueLength="{{adminAlertOverlay.queueLength}}"
+  bind:later="onAdminAlertLater"
+  bind:view="onAdminAlertView"
+/>
+    <view class="navbar-actions">
+      <text class="action-icon" bindtap="onShare">📤</text>
+      <text class="action-icon" bindtap="onToggleFavorite">{{isFavorite ? '❤️' : '🤍'}}</text>
+    </view>
+  </view>
+
+  <!-- 骨架屏 -->
+  <view class="skeleton-wrapper" wx:if="{{loading}}">
+    <view class="skeleton-swiper shimmer"></view>
+    <view class="skeleton-content">
+      <view class="skeleton-line shimmer" style="width: 70%;"></view>
+      <view class="skeleton-line shimmer" style="width: 40%;"></view>
+      <view class="skeleton-line shimmer" style="width: 90%;"></view>
+      <view class="skeleton-line shimmer" style="width: 60%;"></view>
+    </view>
+  </view>
+
+  <!-- 主内容 -->
+  <scroll-view class="main-content" scroll-y wx:else>
+    <!-- 图片轮播 -->
+    <view class="swiper-wrapper">
+      <swiper 
+        class="image-swiper" 
+        indicator-dots="{{images.length > 1}}"
+        indicator-color="rgba(255, 255, 255, 0.5)"
+        indicator-active-color="#fff"
+        circular
+        autoplay
+        interval="5000"
+        bindchange="onSwiperChange"
+      >
+        <swiper-item wx:for="{{images}}" wx:key="index" bindtap="onPreviewImage" data-index="{{index}}">
+          <image class="swiper-image" src="{{item}}" mode="aspectFill" lazy-load />
+        </swiper-item>
+      </swiper>
+      
+      <!-- 图片指示器 -->
+      <view class="image-indicator" wx:if="{{images.length > 1}}">
+        <text>{{currentImageIndex + 1}}/{{images.length}}</text>
+      </view>
+
+      <!-- 媒体播放按钮 -->
+      <view class="media-play-btn" wx:if="{{mediaUrl}}" bindtap="onPlayMedia">
+        <text class="play-icon">{{mediaType === 'video' ? '▶️' : '🎵'}}</text>
+        <text class="play-text">{{mediaType === 'video' ? '视频介绍' : '音频介绍'}}</text>
+      </view>
+    </view>
+
+    <!-- 菜品基本信息 -->
+    <view class="dish-info-card">
+      <view class="dish-header">
+        <view class="dish-title-row">
+          <text class="dish-name">{{dish.name}}</text>
+          <view class="dish-badges">
+            <view class="badge hot" wx:if="{{dish.is_hot}}">🔥 热销</view>
+            <view class="badge new" wx:if="{{dish.is_new}}">✨ 新品</view>
+            <view class="badge recommend" wx:if="{{dish.is_recommend}}">👍 推荐</view>
+          </view>
+        </view>
+        
+        <view class="dish-subtitle" wx:if="{{dish.subtitle}}">
+          <text>{{dish.subtitle}}</text>
+        </view>
+      </view>
+
+      <view class="dish-stats">
+        <view class="stat-item">
+          <text class="stat-value">{{dish.rating || '4.8'}}</text>
+          <text class="stat-label">评分</text>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <text class="stat-value">{{dish.sales || 0}}</text>
+          <text class="stat-label">月销</text>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <text class="stat-value">{{dish.like_count || 0}}</text>
+          <text class="stat-label">点赞</text>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <text class="stat-value">{{reviewCount}}</text>
+          <text class="stat-label">评价</text>
+        </view>
+      </view>
+
+      <view class="price-section">
+        <view class="price-left">
+          <text class="price-label">现价</text>
+          <text class="current-price">¥{{dish.price}}</text>
+          <text class="original-price" wx:if="{{dish.original_price && dish.original_price > dish.price}}">¥{{dish.original_price}}</text>
+        </view>
+        <view class="stock-badge {{dish.stock <= 10 ? 'low' : ''}}">
+          <text>库存 {{dish.stock}} 份</text>
+        </view>
+      </view>
+
+      <view class="window-banner">
+        <text class="window-banner-label">所属窗口</text>
+        <text class="window-banner-value">{{dish.window_label}}</text>
+      </view>
+    </view>
+
+    <!-- 菜品标签 -->
+    <view class="tags-card" wx:if="{{tags.length > 0}}">
+      <view class="card-title">
+        <text class="title-icon">🏷️</text>
+        <text class="title-text">菜品标签</text>
+      </view>
+      <view class="tags-list">
+        <view class="tag-item" wx:for="{{tags}}" wx:key="*this">
+          <text>{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 菜品详情 -->
+    <view class="detail-card">
+      <view class="card-title">
+        <text class="title-icon">📝</text>
+        <text class="title-text">菜品详情</text>
+      </view>
+      <view class="detail-content">
+        <text class="detail-text">{{dish.description || '暂无详细描述'}}</text>
+      </view>
+    </view>
+
+    <!-- 营养信息 -->
+    <view class="nutrition-card" wx:if="{{dish.calorie || dish.protein || dish.fat || dish.carbohydrate}}">
+      <view class="card-title">
+        <text class="title-icon">🥗</text>
+        <text class="title-text">营养成分</text>
+        <text class="nutrition-unit">（每100g）</text>
+      </view>
+      <view class="nutrition-grid">
+        <view class="nutrition-item" wx:if="{{dish.calorie}}">
+          <text class="nutrition-icon">🔥</text>
+          <text class="nutrition-value">{{dish.calorie}}</text>
+          <text class="nutrition-label">千卡</text>
+        </view>
+        <view class="nutrition-item" wx:if="{{dish.protein}}">
+          <text class="nutrition-icon">💪</text>
+          <text class="nutrition-value">{{dish.protein}}</text>
+          <text class="nutrition-label">蛋白质(g)</text>
+        </view>
+        <view class="nutrition-item" wx:if="{{dish.fat}}">
+          <text class="nutrition-icon">🧈</text>
+          <text class="nutrition-value">{{dish.fat}}</text>
+          <text class="nutrition-label">脂肪(g)</text>
+        </view>
+        <view class="nutrition-item" wx:if="{{dish.carbohydrate}}">
+          <text class="nutrition-icon">🌾</text>
+          <text class="nutrition-value">{{dish.carbohydrate}}</text>
+          <text class="nutrition-label">碳水(g)</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 特殊信息 -->
+    <view class="special-info-card" wx:if="{{dish.spicy_level > 0 || dish.allergen}}">
+      <view class="card-title">
+        <text class="title-icon">⚠️</text>
+        <text class="title-text">特殊提示</text>
+      </view>
+      <view class="special-info-list">
+        <view class="special-info-item" wx:if="{{dish.spicy_level > 0}}">
+          <text class="info-label">辣度等级</text>
+          <view class="spicy-level">
+            <text class="spicy-icon {{index < dish.spicy_level ? 'active' : ''}}" wx:for="{{5}}" wx:key="*this">🌶️</text>
+          </view>
+        </view>
+        <view class="special-info-item" wx:if="{{dish.allergen}}">
+          <text class="info-label">过敏原</text>
+          <text class="info-value">{{dish.allergen}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 食堂信息 -->
+    <view class="canteen-card" wx:if="{{canteen}}" bindtap="onViewCanteen">
+      <view class="card-title">
+        <text class="title-icon">🏪</text>
+        <text class="title-text">所属食堂</text>
+      </view>
+      <view class="canteen-info">
+        <image class="canteen-avatar" src="{{canteen.image || '/static/default-canteen.png'}}" mode="aspectFill" />
+        <view class="canteen-text">
+          <text class="canteen-name">{{canteen.canteen_name}}</text>
+          <text class="canteen-location">📍 {{canteen.building}} · {{canteen.floor}} · 窗口 {{canteen.window_no}}</text>
+        </view>
+        <text class="canteen-arrow">›</text>
+      </view>
+    </view>
+
+    <!-- 用户评价 -->
+    <view class="reviews-card">
+      <view class="card-title">
+        <text class="title-icon">💬</text>
+        <text class="title-text">用户评价</text>
+        <text class="review-count">({{reviewCount}})</text>
+      </view>
+
+      <!-- 评价统计 -->
+      <view class="review-summary" wx:if="{{reviewCount > 0}}">
+        <view class="summary-left">
+          <text class="summary-score">{{dish.rating || '4.8'}}</text>
+          <view class="summary-stars">
+            <text class="star" wx:for="{{5}}" wx:key="*this">★</text>
+          </view>
+        </view>
+        <view class="summary-right">
+          <view class="rating-bar" wx:for="{{ratingDistribution}}" wx:key="star">
+            <text class="rating-label">{{item.star}}星</text>
+            <view class="rating-progress">
+              <view class="rating-progress-bar" style="width: {{item.percent}}%;"></view>
+            </view>
+            <text class="rating-percent">{{item.percent}}%</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 评价列表 -->
+      <view class="reviews-list" wx:if="{{reviews.length > 0}}">
+        <view class="review-item" wx:for="{{reviews}}" wx:key="review_id">
+          <view class="review-header">
+            <image class="review-avatar" src="{{item.user_avatar || '/static/default-avatar.png'}}" mode="aspectFill" />
+            <view class="review-user-info">
+              <view class="review-user-row">
+                <text class="review-username">{{item.user_name || '匿名用户'}}</text>
+                <text class="review-identity {{item.is_anonymous ? 'anonymous' : 'named'}}">{{item.is_anonymous ? '匿名' : '实名'}}</text>
+              </view>
+              <view class="review-rating">
+                <text class="star filled" wx:for="{{item.rating}}" wx:key="*this">★</text>
+                <text class="star" wx:for="{{5 - item.rating}}" wx:key="*this">★</text>
+              </view>
+            </view>
+            <text class="review-time">{{item.create_time_text}}</text>
+          </view>
+          <text class="review-content" wx:if="{{item.content}}">{{item.content}}</text>
+          <view class="review-images" wx:if="{{item.images && item.images.length > 0}}">
+            <image 
+              class="review-image" 
+              wx:for="{{item.images}}" 
+              wx:key="*this"
+              wx:for-item="img"
+              src="{{img}}" 
+              mode="aspectFill"
+              bindtap="onPreviewReviewImage"
+              data-images="{{item.images}}"
+              data-index="{{index}}"
+            />
+          </view>
+          <view class="merchant-reply" wx:if="{{item.reply_content}}">
+            <view class="merchant-reply-head">
+              <text class="merchant-reply-tag">商家回复</text>
+              <text class="merchant-reply-time" wx:if="{{item.reply_time_text}}">{{item.reply_time_text}}</text>
+            </view>
+            <text class="merchant-reply-content">{{item.reply_content}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 查看更多评价 -->
+      <view class="view-more-reviews" wx:if="{{reviewCount > 3}}" bindtap="onViewAllReviews">
+        <text>查看全部{{reviewCount}}条评价</text>
+        <text class="arrow">›</text>
+      </view>
+
+      <!-- 空状态 -->
+      <view class="empty-reviews" wx:if="{{reviewCount === 0}}">
+        <text class="empty-icon">💭</text>
+        <text class="empty-text">暂无评价，快来抢沙发吧~</text>
+      </view>
+    </view>
+
+    <!-- 推荐菜品 -->
+    <view class="recommend-card" wx:if="{{recommendDishes.length > 0}}">
+      <view class="card-title">
+        <text class="title-icon">🌟</text>
+        <text class="title-text">为你推荐</text>
+      </view>
+      <scroll-view class="recommend-scroll" scroll-x>
+        <view 
+          class="recommend-item" 
+          wx:for="{{recommendDishes}}" 
+          wx:key="dish_id"
+          bindtap="onRecommendTap"
+          data-id="{{item.dish_id}}"
+        >
+          <image class="recommend-image" src="{{item.cover_url}}" mode="aspectFill" />
+          <text class="recommend-name">{{item.name}}</text>
+          <view class="recommend-footer">
+            <text class="recommend-price">¥{{item.price}}</text>
+            <text class="recommend-sales">月售{{item.sales || 0}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 底部占位 -->
+    <view class="bottom-placeholder"></view>
+  </scroll-view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar" wx:if="{{!loading}}">
+    <!-- 数量选择 -->
+    <view class="quantity-box">
+      <view class="qty-btn" bindtap="onQuantityMinus">-</view>
+      <text class="qty-num">{{quantity}}</text>
+      <view class="qty-btn" bindtap="onQuantityPlus">+</view>
+    </view>
+    
+    <!-- 右侧按钮组 -->
+    <view class="bar-actions">
+      <button class="cart-btn" bindtap="onAddToCart">
+        <text class="cart-icon">🛒</text>
+      </button>
+      <button class="buy-btn" bindtap="onBuyNow">购买</button>
+    </view>
+  </view>
+</view>

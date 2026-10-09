@@ -1,0 +1,49 @@
+<view wx:if="{{show && alert}}" class="admin-alert-root">
+  <view class="admin-alert-mask" catchtap="onMaskTap"></view>
+  <view class="admin-alert-shell">
+    <view class="admin-alert-glow admin-alert-glow-left"></view>
+    <view class="admin-alert-glow admin-alert-glow-right"></view>
+
+    <view class="admin-alert-card admin-alert-{{alert.type || 'default'}}">
+      <view class="admin-alert-head">
+        <view class="admin-alert-badge" style="background: {{alert.accentSoft || '#edf2ff'}}; color: {{alert.accent || '#5c7cfa'}};">
+          <text>{{alert.tagText || '实时提醒'}}</text>
+        </view>
+        <view class="admin-alert-queue" wx:if="{{queueLength > 0}}">
+          <text>后续 {{queueLength}} 条</text>
+        </view>
+      </view>
+
+      <view class="admin-alert-main">
+        <view class="admin-alert-icon" style="background: {{alert.iconBg || 'linear-gradient(135deg, #5c7cfa 0%, #7c5cff 100%)'}};">
+          <text>{{alert.icon || '🔔'}}</text>
+        </view>
+        <view class="admin-alert-texts">
+          <text class="admin-alert-title">{{alert.title || '订单提醒'}}</text>
+          <text class="admin-alert-message">{{alert.content || '您有新的订单状态变更，请及时查看。'}}</text>
+        </view>
+      </view>
+
+      <view class="admin-alert-meta" wx:if="{{alert.order_no || alert.pay_amount_text || alert.refund_amount_text || alert.pickup_code}}">
+        <view class="meta-chip" wx:if="{{alert.order_no}}">
+          <text>单号 {{alert.order_no}}</text>
+        </view>
+        <view class="meta-chip" wx:if="{{alert.pay_amount_text}}">
+          <text>金额 {{alert.pay_amount_text}}</text>
+        </view>
+        <view class="meta-chip" wx:if="{{alert.refund_amount_text}}">
+          <text>退款 {{alert.refund_amount_text}}</text>
+        </view>
+        <view class="meta-chip" wx:if="{{alert.pickup_code}}">
+          <text>取餐码 {{alert.pickup_code}}</text>
+        </view>
+      </view>
+
+      <view class="admin-alert-actions">
+        <button class="action-btn action-later" bindtap="onLater">稍后处理</button>
+        <button class="action-btn action-view" bindtap="onView" style="background: {{alert.accent || '#5c7cfa'}};">立即查看</button>
+      </view>
+    </view>
+  </view>
+</view>
+

@@ -1,0 +1,116 @@
+<!--pages/address/address.wxml-->
+<view class="address-page">
+  <view class="ambient ambient-1"></view>
+  <view class="ambient ambient-2"></view>
+
+<admin-alert-overlay
+  show="{{adminAlertOverlay.show}}"
+  alert="{{adminAlertOverlay.alert}}"
+  queueLength="{{adminAlertOverlay.queueLength}}"
+  bind:later="onAdminAlertLater"
+  bind:view="onAdminAlertView"
+/>
+
+  <scroll-view class="address-scroll" scroll-y="{{true}}" enhanced>
+    <view class="address-shell">
+      <view class="hero-panel">
+        <view class="hero-copy">
+          <text class="hero-kicker">ADDRESS BOOK</text>
+          <text class="hero-title">地址管理</text>
+          <text class="hero-subtitle">把常用收货地址整理好，下单时就能更快确认配送位置。</text>
+        </view>
+
+        <view class="hero-stats">
+          <view class="hero-stat warm-card">
+            <text class="hero-stat-value">{{addresses.length}}</text>
+            <text class="hero-stat-label">地址数量</text>
+          </view>
+          <view class="hero-stat cool-card">
+            <text class="hero-stat-value">{{addresses.length > 0 ? 'ON' : '—'}}</text>
+            <text class="hero-stat-label">地址簿状态</text>
+      </view>
+          <view class="hero-stat mint-card">
+            <text class="hero-stat-value">{{loading ? '...' : 'OK'}}</text>
+            <text class="hero-stat-label">同步状态</text>
+      </view>
+    </view>
+  </view>
+
+      <view wx:if="{{loading}}" class="loading-panel">
+        <view class="loading-orbit"></view>
+        <text class="loading-title">正在整理地址簿</text>
+        <text class="loading-desc">马上就好，请稍等一下</text>
+      </view>
+
+      <block wx:else>
+        <view wx:if="{{addresses.length > 0}}" class="section-bar">
+          <view>
+            <text class="section-title">我的地址</text>
+            <text class="section-desc">默认地址会在下单时优先使用，也可以随时编辑和删除。</text>
+          </view>
+          <view class="section-pill">
+            <text>{{addresses.length}} 条</text>
+          </view>
+        </view>
+
+        <view wx:if="{{addresses.length > 0}}" class="address-list">
+          <view
+            class="address-card {{item.is_default === 1 ? 'default' : ''}}"
+            wx:for="{{addresses}}"
+            wx:key="address_id"
+          >
+            <view class="card-top">
+              <view class="receiver-row">
+                <text class="receiver">{{item.receiver}}</text>
+                <text class="phone">{{item.phone}}</text>
+              </view>
+              <text class="default-tag" wx:if="{{item.is_default === 1}}">默认地址</text>
+            </view>
+
+            <view class="address-body">
+              <view class="address-badge">送</view>
+              <view class="address-copy">
+                <text class="address-detail">{{item.building}} {{item.room}}</text>
+                <text class="address-location" wx:if="{{item.latitude}}">已保存定位信息，可更准确配送</text>
+                <text class="address-location" wx:else>未保存定位信息</text>
+              </view>
+  </view>
+
+            <view class="address-actions">
+              <view class="action-btn" bindtap="onEditAddress" data-id="{{item.address_id}}">
+                <text>编辑</text>
+              </view>
+              <view class="action-btn danger" bindtap="onDeleteAddress" data-id="{{item.address_id}}">
+                <text>删除</text>
+              </view>
+              <view class="action-btn primary" wx:if="{{item.is_default !== 1}}" bindtap="onSetDefault" data-id="{{item.address_id}}">
+                <text>设为默认</text>
+              </view>
+              <view class="action-btn muted" wx:else>
+                <text>默认中</text>
+              </view>
+            </view>
+          </view>
+  </view>
+
+        <view wx:else class="state-panel">
+          <view class="state-icon warm">⌂</view>
+          <text class="state-title">还没有收货地址</text>
+          <text class="state-desc">先新增一个常用地址吧，之后下单就不用每次重复填写了。</text>
+        </view>
+      </block>
+    </view>
+  </scroll-view>
+
+  <view class="add-bar">
+    <view class="add-shell" bindtap="onAddAddress">
+      <view class="add-copy">
+        <text class="add-title">新增收货地址</text>
+        <text class="add-desc">保存宿舍楼、房间号和定位信息</text>
+      </view>
+      <view class="add-btn">
+        <text>＋ 添加</text>
+      </view>
+    </view>
+  </view>
+</view>

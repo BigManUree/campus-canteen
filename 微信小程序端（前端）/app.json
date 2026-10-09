@@ -1,0 +1,91 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/auth/login",
+    "pages/auth/register",
+    "pages/auth/forgot-password",
+    "pages/search/search",
+    "pages/category/category",
+    "pages/dish/detail",
+    "pages/media/media",
+    "pages/cart/cart",
+    "pages/order/confirm",
+    "pages/order/list",
+    "pages/order/detail",
+    "pages/refund/apply",
+    "pages/refund/list",
+    "pages/refund/detail",
+    "pages/profile/profile",
+    "pages/profile/edit",
+    "pages/profile/change-password",
+    "pages/address/address",
+    "pages/address/edit",
+    "pages/review/review",
+    "pages/review/list",
+    "pages/favorite/favorite",
+    "pages/history/history",
+    "pages/coupon/coupon",
+    "pages/notification/notification",
+    "pages/activity/activity",
+    "pages/activity/detail",
+    "pages/faq/faq"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "校园食堂点餐",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f5f5f5",
+    "enablePullDownRefresh": false
+  },
+  "tabBar": {
+    "color": "#7A7E83",
+    "selectedColor": "#3cc51f",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "static/tabbar/home.png",
+        "selectedIconPath": "static/tabbar/home-active.png",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/category/category",
+        "iconPath": "static/tabbar/category.png",
+        "selectedIconPath": "static/tabbar/category-active.png",
+        "text": "分类"
+      },
+      {
+        "pagePath": "pages/cart/cart",
+        "iconPath": "static/tabbar/cart.png",
+        "selectedIconPath": "static/tabbar/cart-active.png",
+        "text": "购物车"
+      },
+      {
+        "pagePath": "pages/order/list",
+        "iconPath": "static/tabbar/order.png",
+        "selectedIconPath": "static/tabbar/order-active.png",
+        "text": "订单"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "iconPath": "static/tabbar/profile.png",
+        "selectedIconPath": "static/tabbar/profile-active.png",
+        "text": "我的"
+      }
+    ]
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "你的位置信息将用于定位附近的食堂和配送服务"
+    }
+  },
+  "requiredPrivateInfos": [
+    "chooseLocation",
+    "getLocation"
+  ],
+  "style": "v2",
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

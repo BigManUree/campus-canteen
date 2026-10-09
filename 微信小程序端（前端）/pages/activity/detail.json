@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "活动详情",
+  "navigationBarBackgroundColor": "#10203a",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#f4efe6",
+  "usingComponents": {
+    "admin-alert-overlay": "/components/admin-alert-overlay/admin-alert-overlay"
+  }
+}
+

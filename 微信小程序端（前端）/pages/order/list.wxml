@@ -1,0 +1,299 @@
+<!--pages/order/list.wxml-->
+<view class="order-page">
+  <view class="ambient ambient-1"></view>
+  <view class="ambient ambient-2"></view>
+
+  <scroll-view 
+    class="order-container"
+    scroll-y="{{true}}"
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{refreshing}}"
+    bindrefresherrefresh="onRefresh"
+    bindscrolltolower="onLoadMore"
+    lower-threshold="{{120}}"
+  >
+    <view class="content-wrap">
+      <view class="hero-shell">
+        <view class="hero-panel">
+          <view class="hero-top">
+            <view class="hero-copy">
+              <text class="hero-kicker">ORDER CENTER</text>
+              <text class="hero-title">我的订单</text>
+              <text class="hero-subtitle">按状态查看订单进度，支付、取餐、评价都集中在这里完成。</text>
+            </view>
+
+            <view class="hero-tools">
+              <view class="hero-search-btn" bindtap="onSearchTap">
+                <text class="hero-search-icon">⌕</text>
+              </view>
+            </view>
+          </view>
+
+          <admin-alert-overlay
+            show="{{adminAlertOverlay.show}}"
+            alert="{{adminAlertOverlay.alert}}"
+            queueLength="{{adminAlertOverlay.queueLength}}"
+            bind:later="onAdminAlertLater"
+            bind:view="onAdminAlertView"
+          />
+
+          <view class="hero-stats">
+            <view class="hero-stat-card warm-card {{currentStatus === 'all' ? 'active' : ''}}" bindtap="onStatusChange" data-status="all">
+              <text class="hero-stat-value">{{statusCount.all}}</text>
+              <text class="hero-stat-label">全部订单</text>
+            </view>
+            <view class="hero-stat-card cool-card {{currentStatus === 'pending' ? 'active' : ''}}" bindtap="onStatusChange" data-status="pending">
+              <text class="hero-stat-value">{{statusCount.pending}}</text>
+              <text class="hero-stat-label">待支付</text>
+            </view>
+            <view class="hero-stat-card mint-card {{currentStatus === 'ready' ? 'active' : ''}}" bindtap="onStatusChange" data-status="ready">
+              <text class="hero-stat-value">{{statusCount.ready}}</text>
+              <text class="hero-stat-label">待取餐</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="search-sheet {{showSearch ? 'show' : ''}}">
+        <view class="search-shell">
+        <view class="search-box">
+            <text class="search-icon">⌕</text>
+          <input 
+            class="search-input" 
+            type="text" 
+            placeholder="搜索订单号、商品名称" 
+            value="{{keyword}}"
+            bindinput="onSearchInput"
+            confirm-type="search"
+            bindconfirm="onSearch"
+          />
+          <text class="search-clear" wx:if="{{keyword}}" catchtap="onClearSearch">✕</text>
+        </view>
+        <text class="search-cancel" bindtap="onCancelSearch">取消</text>
+        </view>
+      </view>
+
+      <view class="status-strip-wrap">
+        <scroll-view class="status-strip" scroll-x show-scrollbar="false" enhanced>
+          <view class="status-strip-inner">
+            <view class="status-pill {{currentStatus === 'all' ? 'active' : ''}}" bindtap="onStatusChange" data-status="all">
+              <text class="status-pill-text">全部</text>
+              <text class="status-pill-count" wx:if="{{statusCount.all > 0}}">{{statusCount.all}}</text>
+            </view>
+            <view class="status-pill {{currentStatus === 'pending' ? 'active' : ''}}" bindtap="onStatusChange" data-status="pending">
+              <text class="status-pill-text">待支付</text>
+              <text class="status-pill-count" wx:if="{{statusCount.pending > 0}}">{{statusCount.pending}}</text>
+            </view>
+            <view class="status-pill {{currentStatus === 'preparing' ? 'active' : ''}}" bindtap="onStatusChange" data-status="preparing">
+              <text class="status-pill-text">制作中</text>
+              <text class="status-pill-count" wx:if="{{statusCount.preparing > 0}}">{{statusCount.preparing}}</text>
+            </view>
+            <view class="status-pill {{currentStatus === 'ready' ? 'active' : ''}}" bindtap="onStatusChange" data-status="ready">
+              <text class="status-pill-text">待取餐</text>
+              <text class="status-pill-count" wx:if="{{statusCount.ready > 0}}">{{statusCount.ready}}</text>
+            </view>
+            <view class="status-pill {{currentStatus === 'delivering' ? 'active' : ''}}" bindtap="onStatusChange" data-status="delivering">
+              <text class="status-pill-text">配送中</text>
+              <text class="status-pill-count" wx:if="{{statusCount.delivering > 0}}">{{statusCount.delivering}}</text>
+            </view>
+            <view class="status-pill {{currentStatus === 'completed' ? 'active' : ''}}" bindtap="onStatusChange" data-status="completed">
+              <text class="status-pill-text">已完成</text>
+            </view>
+            <view class="status-pill {{currentStatus === 'cancelled' ? 'active' : ''}}" bindtap="onStatusChange" data-status="cancelled">
+              <text class="status-pill-text">已取消</text>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+
+    <view class="skeleton-wrapper" wx:if="{{loading && orders.length === 0}}">
+      <view class="skeleton-card" wx:for="{{[1,2,3]}}" wx:key="*this">
+          <view class="skeleton-badge"></view>
+        <view class="skeleton-header">
+            <view class="skeleton-avatar"></view>
+            <view class="skeleton-copy">
+          <view class="skeleton-line w-60"></view>
+              <view class="skeleton-line w-40"></view>
+            </view>
+        </view>
+        <view class="skeleton-body">
+          <view class="skeleton-image"></view>
+          <view class="skeleton-info">
+            <view class="skeleton-line w-80"></view>
+            <view class="skeleton-line w-60"></view>
+              <view class="skeleton-line w-30"></view>
+          </view>
+        </view>
+        <view class="skeleton-footer">
+          <view class="skeleton-line w-50"></view>
+          <view class="skeleton-line w-30"></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-shell" wx:if="{{!loading && orders.length === 0}}">
+      <view class="empty-orb"></view>
+      <text class="empty-icon">⌕</text>
+      <text class="empty-title">{{keyword ? '没有找到相关订单' : '你还没有订单'}}</text>
+      <text class="empty-desc">{{keyword ? ('没有找到包含“' + keyword + '”的菜品或订单，试试换个关键词') : '下单后的支付、取餐、评价进度都会集中展示在这里'}}</text>
+      <view class="empty-action" wx:if="{{keyword}}" bindtap="onClearSearch">
+        <text>清空搜索</text>
+      </view>
+    </view>
+
+    <view class="order-list" wx:if="{{!loading && orders.length > 0}}">
+      <view 
+        class="order-card"
+        wx:for="{{orders}}"
+        wx:key="_key"
+        bindtap="onOrderDetail"
+        data-id="{{item.order_id}}"
+      >
+          <view class="order-card-glow"></view>
+
+          <view class="card-head">
+            <view class="shop-badge">
+              <text class="shop-badge-icon">◈</text>
+            </view>
+            <view class="card-head-main">
+              <view class="card-head-top">
+              <text class="canteen-name">{{item.canteen_name}}</text>
+          <view class="order-status" style="background: {{item.status_bg}}; color: {{item.status_color}}">
+            <text>{{item.order_status_text}}</text>
+          </view>
+              </view>
+              <view class="card-head-sub">
+                <text class="order-time">{{item.create_time_text}}</text>
+                <text class="order-no">订单号 {{item.order_no}}</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="countdown-banner {{item.countdownWarning ? 'warning' : ''}}" wx:if="{{item.showCountdown}}">
+            <text class="countdown-icon">⏳</text>
+            <text class="countdown-text">{{item.countdown}}</text>
+        </view>
+
+          <view class="progress-panel" wx:if="{{item.order_status > 0 && item.order_status < 4}}">
+            <view class="progress-header">
+              <text class="progress-title">订单进度</text>
+              <text class="progress-percent">{{item.progress_percent}}%</text>
+            </view>
+          <view class="timeline-track">
+            <view class="timeline-progress" style="width: {{item.progress_percent}}%"></view>
+          </view>
+          <view class="timeline-steps">
+            <view class="timeline-step {{item.order_status >= 1 ? 'active' : ''}} {{item.order_status === 1 ? 'current' : ''}}">
+                <view class="step-dot"><text class="step-icon" wx:if="{{item.order_status > 1}}">✓</text></view>
+              <text class="step-label">制作中</text>
+            </view>
+            <view class="timeline-step {{item.order_status >= 2 ? 'active' : ''}} {{item.order_status === 2 ? 'current' : ''}}">
+                <view class="step-dot"><text class="step-icon" wx:if="{{item.order_status > 2}}">✓</text></view>
+              <text class="step-label">{{item.delivery_type === 1 ? '配送中' : '待取餐'}}</text>
+            </view>
+            <view class="timeline-step {{item.order_status >= 3 ? 'active' : ''}} {{item.order_status === 3 ? 'current' : ''}}">
+                <view class="step-dot"><text class="step-icon" wx:if="{{item.order_status > 3}}">✓</text></view>
+                <text class="step-label">{{item.delivery_type === 1 ? '配送完成' : '已取餐'}}</text>
+            </view>
+          </view>
+        </view>
+
+          <view class="pickup-panel" wx:if="{{item.order_status === 2 && item.pickup_code}}">
+            <view class="pickup-copy">
+            <text class="pickup-label">取餐码</text>
+            <text class="pickup-code">{{item.pickup_code}}</text>
+          </view>
+          <text class="pickup-hint">请向商家出示此取餐码</text>
+        </view>
+
+          <view class="dish-panel">
+            <view class="summary-strip" wx:if="{{item.dishes_summary}}">
+              <text class="summary-label">菜品概览</text>
+              <text class="summary-text">{{item.dishes_summary}}</text>
+            </view>
+
+          <view 
+            class="dish-item" 
+            wx:for="{{item.dishes}}" 
+            wx:key="dish_id" 
+            wx:for-item="dish"
+            wx:for-index="dishIndex"
+            wx:if="{{dishIndex < 3}}"
+          >
+            <image class="dish-image" src="{{dish.image}}" mode="aspectFill" lazy-load />
+            <view class="dish-details">
+              <text class="dish-name">{{dish.name}}</text>
+              <view class="dish-meta">
+                <text class="dish-price">¥{{dish.price}}</text>
+                <text class="dish-quantity">×{{dish.quantity}}</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="more-dishes" wx:if="{{item.dishes.length > 3}}">
+              <text>共 {{item.dishes.length}} 件商品</text>
+            <text class="arrow">›</text>
+          </view>
+        </view>
+
+          <view class="amount-panel">
+          <view class="amount-row" wx:if="{{item.discount_amount > 0}}">
+            <text class="amount-label">商品总额</text>
+            <text class="amount-value">¥{{item.total_amount_text}}</text>
+          </view>
+          <view class="amount-row" wx:if="{{item.discount_amount > 0}}">
+            <text class="amount-label">优惠减免</text>
+            <text class="amount-value discount">-¥{{item.discount_amount_text}}</text>
+          </view>
+          <view class="amount-row total">
+            <text class="amount-label">实付金额</text>
+            <text class="amount-value primary">¥{{item.pay_amount_text}}</text>
+          </view>
+        </view>
+
+        <view class="order-actions">
+          <block wx:if="{{item.order_status === 0 && item.pay_status === 0}}">
+              <view class="action-btn secondary" catchtap="onCancelOrder" data-id="{{item.order_id}}"><text>取消订单</text></view>
+              <view class="action-btn primary" catchtap="onPayOrder" data-id="{{item.order_id}}"><text>立即支付</text></view>
+          </block>
+
+          <block wx:if="{{item.order_status === 1}}">
+              <view class="action-btn secondary" catchtap="onContactService" data-id="{{item.order_id}}"><text>联系商家</text></view>
+              <view class="action-btn secondary" catchtap="onRemindOrder" data-id="{{item.order_id}}"><text>催单</text></view>
+          </block>
+
+          <block wx:if="{{item.order_status === 2}}">
+              <view class="action-btn secondary" catchtap="onContactService" data-id="{{item.order_id}}"><text>联系商家</text></view>
+              <view class="action-btn primary" catchtap="onConfirmPickup" data-id="{{item.order_id}}"><text>确认取餐</text></view>
+          </block>
+
+          <block wx:if="{{item.order_status === 3}}">
+              <view class="action-btn secondary" catchtap="onContactService" data-id="{{item.order_id}}"><text>联系骑手</text></view>
+              <view class="action-btn secondary" catchtap="onViewLogistics" data-id="{{item.order_id}}"><text>查看物流</text></view>
+          </block>
+
+          <block wx:if="{{item.order_status === 4}}">
+              <view class="action-btn secondary" catchtap="onReorder" data-id="{{item.order_id}}"><text>再来一单</text></view>
+              <view class="action-btn primary" wx:if="{{!item.is_reviewed}}" catchtap="onReviewOrder" data-id="{{item.order_id}}"><text>去评价</text></view>
+              <view class="action-btn secondary disabled" wx:if="{{item.is_reviewed}}"><text>已评价</text></view>
+          </block>
+
+          <block wx:if="{{item.order_status === 5}}">
+              <view class="action-btn secondary" catchtap="onReorder" data-id="{{item.order_id}}"><text>再来一单</text></view>
+          </block>
+
+            <view class="action-btn ghost" catchtap="onDeleteOrder" data-id="{{item.order_id}}"><text>删除订单</text></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="load-more" wx:if="{{orders.length > 0 && !loading}}">
+      <view class="loading-spinner" wx:if="{{loadingMore}}"></view>
+      <text class="load-text" wx:if="{{loadingMore}}">加载中...</text>
+        <text class="load-text" wx:elif="{{hasMore}}">继续上滑查看更早订单</text>
+        <text class="load-text end" wx:else>没有更多订单了</text>
+    </view>
+
+    </view>
+  </scroll-view>
+</view>

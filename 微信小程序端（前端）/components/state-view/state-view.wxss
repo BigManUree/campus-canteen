@@ -1,0 +1,53 @@
+.state-view {
+  width: 100%;
+}
+
+.state-loading,
+.state-empty,
+.state-error {
+  padding: 90rpx 40rpx;
+  text-align: center;
+  color: #999;
+}
+
+.state-text {
+  display: block;
+  font-size: 26rpx;
+  margin-top: 18rpx;
+}
+
+.state-title {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+}
+
+.btn-retry {
+  margin-top: 26rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 34rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  border-radius: 36rpx;
+  font-size: 28rpx;
+  background: #667eea;
+  color: #fff;
+}
+
+.spinner {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  border: 4rpx solid rgba(102, 126, 234, 0.25);
+  border-top-color: #667eea;
+  margin: 0 auto;
+  animation: svspin 0.9s linear infinite;
+}
+
+@keyframes svspin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+

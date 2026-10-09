@@ -1,0 +1,198 @@
+:root {
+  --admin-bg: #0b1020;
+  --admin-bg-soft: #121936;
+  --admin-surface: rgba(14, 22, 45, 0.88);
+  --admin-surface-strong: #172246;
+  --admin-border: rgba(151, 164, 199, 0.18);
+  --admin-text: #f3f7ff;
+  --admin-text-secondary: #9eaac7;
+  --admin-primary: #63e6be;
+  --admin-primary-strong: #24c99a;
+  --admin-warning: #ffb84d;
+  --admin-danger: #ff6b81;
+  --admin-info: #6ea8fe;
+  --admin-shadow: 0 20px 60px rgba(0, 0, 0, 0.38);
+  --admin-radius-lg: 24px;
+  --admin-radius-md: 18px;
+  --admin-radius-sm: 14px;
+  --el-color-primary: #24c99a;
+  --el-color-success: #1ecf9a;
+  --el-color-warning: #ffb84d;
+  --el-color-danger: #ff6b81;
+  --el-color-info: #6ea8fe;
+  --el-border-radius-base: 14px;
+  --el-font-size-base: 14px;
+  --el-bg-color: #0f1731;
+  --el-bg-color-overlay: #152044;
+  --el-fill-color-light: rgba(255, 255, 255, 0.04);
+  --el-fill-color-blank: transparent;
+  --el-text-color-primary: #f3f7ff;
+  --el-text-color-regular: #c4cce2;
+  --el-text-color-secondary: #8d98b5;
+  --el-border-color: rgba(151, 164, 199, 0.18);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  min-height: 100%;
+  font-family: 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(36, 201, 154, 0.18), transparent 28%),
+    radial-gradient(circle at top right, rgba(110, 168, 254, 0.16), transparent 24%),
+    linear-gradient(160deg, #09101f 0%, #0f1731 48%, #121936 100%);
+  color: var(--admin-text);
+}
+
+body {
+  min-width: 1360px;
+}
+
+@media (max-width: 1100px) {
+  body {
+    min-width: 0;
+  }
+}
+
+body::-webkit-scrollbar,
+.el-scrollbar__wrap::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+body::-webkit-scrollbar-thumb,
+.el-scrollbar__wrap::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(36, 201, 154, 0.78), rgba(110, 168, 254, 0.78));
+  background-clip: padding-box;
+}
+
+body::-webkit-scrollbar-track,
+.el-scrollbar__wrap::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.page-shell {
+  padding: 24px;
+}
+
+.page-stack,
+.page-grid,
+.stats-page,
+.queue-page,
+.export-page,
+.merchant-page,
+.dashboard-page {
+  display: grid;
+}
+
+.panel-card {
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface);
+  box-shadow: var(--admin-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.toolbar h3 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.toolbar p {
+  margin: 8px 0 0;
+  color: #8d98b5;
+}
+
+.toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pagination-wrap {
+  display: flex;
+  margin-top: 22px;
+}
+
+.el-card {
+  --el-card-bg-color: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  box-shadow: var(--admin-shadow);
+  border-radius: var(--admin-radius-lg);
+}
+
+.el-card :is(.el-card__header, .el-card__body) {
+  position: relative;
+}
+
+.el-table,
+.el-dialog,
+.el-drawer,
+.el-dropdown-menu,
+.el-select-dropdown,
+.el-picker-panel,
+.el-popper,
+.el-message-box {
+  --el-bg-color-overlay: #152044;
+  --el-fill-color-light: rgba(255, 255, 255, 0.03);
+  --el-fill-color-blank: transparent;
+}
+
+.el-dialog,
+.el-drawer,
+.el-message-box,
+.el-dropdown-menu,
+.el-select-dropdown,
+.el-picker-panel {
+  border: 1px solid rgba(151, 164, 199, 0.12);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+}
+
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper,
+.el-date-editor.el-input__wrapper,
+.el-button.is-plain {
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 0 0 1px rgba(151, 164, 199, 0.12) inset !important;
+}
+
+.el-table {
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: rgba(255, 255, 255, 0.03);
+  --el-table-border-color: rgba(151, 164, 199, 0.12);
+  --el-table-row-hover-bg-color: rgba(36, 201, 154, 0.06);
+}
+
+.el-pagination {
+  justify-content: flex-end;
+}
+
+.el-empty__description p {
+  color: #8fa0c5;
+}

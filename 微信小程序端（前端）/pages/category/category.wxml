@@ -1,0 +1,169 @@
+<!--pages/category/category.wxml-->
+<view class="page">
+  <scroll-view 
+    class="dish-scroll"
+    scroll-y
+    bindscrolltolower="onReachBottom"
+    enhanced
+    show-scrollbar="false"
+  >
+    <view class="dish-content">
+      <view class="hero-shell">
+        <view class="hero-panel">
+          <view class="hero-topbar">
+            <view class="search-entry" bindtap="onSearchTap">
+              <text class="search-entry-icon">⌕</text>
+              <text class="search-entry-text">搜索菜品、食堂</text>
+            </view>
+
+            <admin-alert-overlay
+              show="{{adminAlertOverlay.show}}"
+              alert="{{adminAlertOverlay.alert}}"
+              queueLength="{{adminAlertOverlay.queueLength}}"
+              bind:later="onAdminAlertLater"
+              bind:view="onAdminAlertView"
+            />
+          </view>
+
+          <view class="hero-content" wx:if="{{canteens.length > 0}}">
+            <view class="hero-label-row">
+              <text class="hero-kicker">CAFETERIA GUIDE</text>
+              <text class="hero-total">{{canteens.length}} 个食堂</text>
+            </view>
+            <text class="hero-title">{{activeCanteenName || '今日食堂精选'}}</text>
+            <text class="hero-subtitle">{{activeCanteenLocation || '切换不同食堂，发现你想吃的窗口与热销菜品'}}</text>
+
+            <view class="hero-stats-row">
+              <view class="hero-stat-card glass">
+                <text class="hero-stat-value">{{activeWindowCount}}</text>
+                <text class="hero-stat-label">窗口数量</text>
+              </view>
+              <view class="hero-stat-card glass">
+                <text class="hero-stat-value">{{total}}</text>
+                <text class="hero-stat-label">当前菜品</text>
+              </view>
+              <view class="hero-stat-card glass sort-card">
+                <text class="hero-stat-value">{{sortLabel}}</text>
+                <text class="hero-stat-label">排序方式</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="canteen-strip-wrap" wx:if="{{canteens.length > 0}}">
+        <scroll-view class="canteen-strip" scroll-x show-scrollbar="false" enhanced>
+          <view class="canteen-strip-inner">
+            <view 
+              class="canteen-pill {{currentCanteen === item.canteen_id ? 'active' : ''}}"
+              wx:for="{{canteens}}"
+              wx:key="canteen_id"
+              bindtap="onCanteenTap"
+              data-id="{{item.canteen_id}}"
+            >
+              <view class="canteen-pill-dot"></view>
+              <view class="canteen-pill-main">
+                <text class="canteen-pill-name">{{item.canteen_name}}</text>
+                <text class="canteen-pill-meta">{{item.building || '校园区域'}} {{item.floor || ''}}</text>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+
+      <view class="control-panel">
+        <view class="control-header">
+          <view>
+            <text class="control-title">菜品分类</text>
+            <text class="control-subtitle">为你挑选当前食堂的人气美食</text>
+          </view>
+          <view class="mini-badge">{{dishes.length}} / {{total}}</view>
+        </view>
+
+        <view class="filter-bar">
+          <view
+            class="filter-chip {{sortBy === 'default' ? 'on' : ''}}"
+            bindtap="onSortChange"
+            data-sort="default"
+          >
+            <text>推荐优先</text>
+          </view>
+          <view
+            class="filter-chip {{sortBy === 'sales' ? 'on' : ''}}"
+            bindtap="onSortChange"
+            data-sort="sales"
+          >
+            <text>销量 {{sortBy === 'sales' ? (order === 'desc' ? '↓' : '↑') : ''}}</text>
+          </view>
+          <view
+            class="filter-chip {{sortBy === 'price' ? 'on' : ''}}"
+            bindtap="onSortChange"
+            data-sort="price"
+          >
+            <text>价格 {{sortBy === 'price' ? (order === 'desc' ? '↑高' : '↓低') : ''}}</text>
+          </view>
+        </view>
+      </view>
+
+        <view class="state-loading" wx:if="{{loading}}">
+        <view class="loading-orbit"></view>
+        <text class="tip">正在为你搜罗美味...</text>
+        </view>
+
+      <block wx:else>
+        <view class="dish-grid" wx:if="{{dishes.length > 0}}">
+          <view 
+            class="dish-card" 
+            wx:for="{{dishes}}" 
+            wx:key="dish_id"
+            bindtap="onDishTap"
+            data-id="{{item.dish_id}}"
+          >
+            <view class="dish-media">
+            <image class="dish-img" src="{{item.cover_url}}" mode="aspectFill" />
+              <view class="dish-media-mask"></view>
+              <view class="dish-badges">
+                <text class="dish-badge hot" wx:if="{{index < 3}}">HOT</text>
+                <text class="dish-badge gentle" wx:if="{{item.sales_count >= 50}}">热卖</text>
+              </view>
+            </view>
+
+            <view class="dish-body">
+              <text class="dish-name">{{item.name}}</text>
+              <text class="dish-info">月售 {{item.sales_count || 0}} · {{activeCanteenName || '当前食堂'}}</text>
+
+              <view class="dish-bottom">
+                <view class="dish-price-box">
+                  <text class="dish-price-symbol">¥</text>
+                  <text class="dish-price">{{item.price}}</text>
+                </view>
+                <view class="add-cart" catchtap="onAddToCart" data-item="{{item}}">
+                  <text class="add-text">加入</text>
+                </view>
+                </view>
+              </view>
+            </view>
+          </view>
+
+          <view class="state-empty" wx:if="{{dishes.length === 0}}">
+          <view class="empty-orb">🍱</view>
+          <text class="empty-title">这个食堂暂时没有上架菜品</text>
+          <text class="empty-tip">切换其他食堂，看看有没有你想吃的</text>
+          </view>
+
+          <view class="load-tip" wx:if="{{dishes.length > 0}}">
+          <text wx:if="{{loadingMore}}">正在加载更多菜品...</text>
+          <text wx:elif="{{hasMore}}">继续上滑，发现更多菜品</text>
+          <text wx:else class="end">已经到底啦，先吃这些吧</text>
+          </view>
+      </block>
+    </view>
+  </scroll-view>
+
+  <view class="cart-float" bindtap="onGoToCart" wx:if="{{cartCount > 0}}">
+    <view class="cart-core">
+    <text class="cart-emoji">🛒</text>
+    </view>
+    <view class="cart-num">{{cartCount}}</view>
+  </view>
+</view>

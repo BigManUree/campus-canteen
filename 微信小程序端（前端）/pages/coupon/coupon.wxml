@@ -1,0 +1,219 @@
+<!--pages/coupon/coupon.wxml-->
+<view class="coupon-page">
+  <view class="coupon-hero">
+    <view class="hero-orb hero-orb-left"></view>
+    <view class="hero-orb hero-orb-right"></view>
+    <view class="hero-grid"></view>
+
+    <view class="header">
+      <view class="header-content">
+        <text class="header-kicker">Campus Dining Perks</text>
+        <text class="header-title">优惠券中心</text>
+        <text class="header-subtitle">领券享优惠，购物更省钱</text>
+      </view>
+      <view class="header-decoration"></view>
+    </view>
+
+    <view class="tab-bar card-shell">
+      <view 
+        class="tab-item {{tabIndex == 0 ? 'active' : ''}}" 
+        bindtap="onTabChange"
+        data-index="0"
+      >
+        <view class="tab-content">
+          <text class="tab-icon">🎁</text>
+          <text class="tab-text">领券中心</text>
+        </view>
+        <view class="tab-indicator"></view>
+      </view>
+      <view 
+        class="tab-item {{tabIndex == 1 ? 'active' : ''}}" 
+        bindtap="onTabChange"
+        data-index="1"
+      >
+        <view class="tab-content">
+          <text class="tab-icon">💳</text>
+          <text class="tab-text">我的卡包</text>
+        </view>
+        <view class="tab-indicator"></view>
+      </view>
+    </view>
+  </view>
+
+  <scroll-view class="content" scroll-y wx:if="{{tabIndex == 0}}">
+    <view wx:if="{{loading}}" class="loading-wrapper">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">正在装载今日优惠...</text>
+    </view>
+
+    <view wx:else class="coupon-list">
+      <view class="section-intro">
+        <text class="section-title">限时可领</text>
+        <text class="section-subtitle">挑一张最适合本单的券</text>
+      </view>
+
+      <view class="coupon-card {{item.isAvailable ? '' : 'disabled'}}" wx:for="{{availableCoupons}}" wx:key="coupon_id" bindtap="onClaimCoupon" data-id="{{item.coupon_id}}">
+        <view class="coupon-ribbon {{item.isAvailable ? 'hot' : 'cold'}}">
+          <text>{{item.isAvailable ? 'NOW' : 'END'}}</text>
+        </view>
+
+        <view class="card-left">
+          <view class="amount-section">
+            <text class="currency" wx:if="{{item.coupon_unit_text}}">{{item.coupon_unit_text}}</text>
+            <text class="amount">{{item.coupon_value_text}}</text>
+            <text wx:if="{{item.coupon_suffix_text}}" class="unit">{{item.coupon_suffix_text}}</text>
+          </view>
+          <view class="threshold">满{{item.min_amount_text}}可用</view>
+        </view>
+
+        <view class="card-divider">
+          <view class="divider-dot" wx:for="{{[1,2,3,4,5,6,7,8,9,10]}}" wx:key="*this"></view>
+        </view>
+
+        <view class="card-right">
+          <view class="card-main">
+            <view class="coupon-title-row">
+              <view class="coupon-title">{{item.name}}</view>
+              <view class="mini-tag">精选</view>
+            </view>
+            <view class="coupon-subtitle">{{item.description || item.desc_text}}</view>
+            <view class="coupon-validity">
+              <text class="validity-label">有效期</text>
+              <text class="validity-date">{{item.valid_start_text}} 至 {{item.valid_end_text}}</text>
+            </view>
+          </view>
+          <view class="card-action">
+            <view class="receive-btn {{item.isAvailable ? 'active' : 'disabled'}}">
+              <text class="btn-text">{{item.isAvailable ? '立即领取' : '已过期'}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{!loading && availableCoupons.length === 0}}" class="empty-state">
+        <view class="empty-icon">🎫</view>
+        <view class="empty-title">暂无可领取的优惠券</view>
+        <view class="empty-desc">敬请期待更多优惠活动</view>
+      </view>
+    </view>
+
+    <view class="load-more" wx:if="{{!loading && availableCoupons.length > 0}}">
+      <view wx:if="{{loadingMore}}" class="loading-more-spinner"></view>
+      <text class="load-more-text">{{loadingMore ? '加载中...' : hasMore ? '上拉加载更多' : '已显示全部'}}</text>
+    </view>
+  </scroll-view>
+
+  <scroll-view class="content" scroll-y wx:if="{{tabIndex == 1}}">
+    <view class="filter-bar">
+      <view 
+        class="filter-chip {{status === 0 ? 'active' : ''}}"
+        bindtap="onStatusChange"
+        data-status="0"
+      >
+        <text class="chip-text">未使用</text>
+        <view class="chip-badge" wx:if="{{status === 0}}"></view>
+      </view>
+      <view 
+        class="filter-chip {{status === 1 ? 'active' : ''}}"
+        bindtap="onStatusChange"
+        data-status="1"
+      >
+        <text class="chip-text">已使用</text>
+        <view class="chip-badge" wx:if="{{status === 1}}"></view>
+      </view>
+      <view 
+        class="filter-chip {{status === 2 ? 'active' : ''}}"
+        bindtap="onStatusChange"
+        data-status="2"
+      >
+        <text class="chip-text">已过期</text>
+        <view class="chip-badge" wx:if="{{status === 2}}"></view>
+      </view>
+    </view>
+
+    <view wx:if="{{loading}}" class="loading-wrapper">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">正在整理你的卡包...</text>
+    </view>
+
+    <view wx:else class="coupon-list">
+      <view class="section-intro compact">
+        <text class="section-title">我的卡包</text>
+        <text class="section-subtitle">按状态查看你已领取的优惠券</text>
+      </view>
+
+      <view 
+        class="coupon-card {{item.status === 1 || item.status === 2 ? 'disabled used-card' : ''}}" 
+        wx:for="{{myCoupons}}" 
+        wx:key="user_coupon_id"
+      >
+        <view class="coupon-ribbon {{item.status === 0 ? 'hot' : 'cold'}}">
+          <text wx:if="{{item.status === 0}}">LIVE</text>
+          <text wx:if="{{item.status === 1}}">USED</text>
+          <text wx:if="{{item.status === 2}}">EXP</text>
+        </view>
+
+        <view class="card-left">
+          <view class="amount-section">
+            <text class="currency" wx:if="{{item.coupon_unit_text}}">{{item.coupon_unit_text}}</text>
+            <text class="amount">{{item.discount_text}}</text>
+            <text wx:if="{{item.coupon_suffix_text}}" class="unit">{{item.coupon_suffix_text}}</text>
+          </view>
+          <view class="threshold">满{{item.min_amount_text}}可用</view>
+        </view>
+
+        <view class="card-divider">
+          <view class="divider-dot" wx:for="{{[1,2,3,4,5,6,7,8,9,10]}}" wx:key="index"></view>
+        </view>
+
+        <view class="card-right">
+          <view class="card-main">
+            <view class="coupon-title-row">
+              <view class="coupon-title">{{item.coupon.name}}</view>
+            </view>
+            <view class="mini-tag mini-tag-under-ribbon muted">卡包</view>
+            <view class="coupon-subtitle">{{item.desc_text}}</view>
+            <view class="coupon-validity">
+              <text class="validity-label">领取时间</text>
+              <text class="validity-date">{{item.claim_time_text}}</text>
+            </view>
+            <view class="coupon-validity">
+              <text class="validity-label">过期时间</text>
+              <text class="validity-date">{{item.expire_time_text || '未设置'}}</text>
+            </view>
+          </view>
+          <view class="card-action">
+            <view class="status-tag {{item.status === 0 ? 'unused' : item.status === 1 ? 'used' : 'expired'}}">
+              <text wx:if="{{item.status === 0}}">未使用</text>
+              <text wx:if="{{item.status === 1}}">已使用</text>
+              <text wx:if="{{item.status === 2}}">已过期</text>
+            </view>
+          </view>
+        </view>
+
+        <view wx:if="{{item.status === 1 || item.status === 2}}" class="watermark">
+          <text class="watermark-text">{{item.status === 1 ? '已使用' : '已过期'}}</text>
+        </view>
+      </view>
+
+      <view wx:if="{{!loading && myCoupons.length === 0}}" class="empty-state">
+        <view class="empty-icon">💳</view>
+        <view class="empty-title">暂无优惠券</view>
+        <view class="empty-desc">快去领券中心领取优惠券吧</view>
+      </view>
+    </view>
+
+    <view class="load-more" wx:if="{{!loading && myCoupons.length > 0}}">
+      <view wx:if="{{loadingMore}}" class="loading-more-spinner"></view>
+      <text class="load-more-text">{{loadingMore ? '加载中...' : hasMore ? '上拉加载更多' : '已显示全部'}}</text>
+    </view>
+  </scroll-view>
+
+  <admin-alert-overlay
+    show="{{adminAlertOverlay.show}}"
+    alert="{{adminAlertOverlay.alert}}"
+    queueLength="{{adminAlertOverlay.queueLength}}"
+    bind:later="onAdminAlertLater"
+    bind:view="onAdminAlertView"
+  />
+</view>
